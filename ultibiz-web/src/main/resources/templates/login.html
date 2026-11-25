@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UltiBiz</title>
+  <!-- theme.js must load first in <head> to avoid FOUC -->
+  <script th:src="@{/js/theme.js}" src="/js/theme.js"></script>
+  <link rel="stylesheet" th:href="@{/vendor/bootstrap/css/bootstrap.min.css}" href="/vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css">
+</head>
+<body class="d-flex align-items-center justify-content-center min-vh-100">
+  <main class="w-100 px-3" style="max-width: 420px;">
+    <div class="ub-card">
+      <h1 class="ub-brand text-center fs-3 mb-1">UltiBiz</h1>
+      <p class="text-center ub-muted small mb-4" th:text="#{login.subtitle}">Sign in to your workspace</p>
+
+      <div th:if="${param.error != null}" class="alert alert-danger py-2" role="alert"
+           th:text="#{login.error}">Invalid username or password.</div>
+
+      <form th:action="@{/login}" method="post">
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+        <div class="mb-3">
+          <label for="username" class="form-label" th:text="#{login.username}">Username</label>
+          <input type="text" class="form-control" id="username" name="username"
+                 autocomplete="username" required autofocus>
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label" th:text="#{login.password}">Password</label>
+          <input type="password" class="form-control" id="password" name="password"
+                 autocomplete="current-password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100" th:text="#{login.submit}">Sign in</button>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

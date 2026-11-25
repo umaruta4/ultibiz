@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{home.title}">Dashboard</title>
+</head>
+<body>
+  <th:block id="page-content">
+    <h1 class="fs-4 mb-1">
+      <span th:text="#{home.greeting}">Welcome</span>,
+      <span th:text="${username}">user</span>
+    </h1>
+    <p class="ub-muted mb-4" th:text="#{home.subtitle}">Here is what is happening in your workspace.</p>
+
+    <div class="ub-card-grid mb-4">
+      <div class="ub-card">
+        <div class="ub-muted small" th:text="#{home.stat.orgs}">Organizations</div>
+        <div class="ub-stat-value" th:text="${orgCount} ?: 0">0</div>
+      </div>
+      <div class="ub-card">
+        <div class="ub-muted small" th:text="#{home.stat.sites}">Sites</div>
+        <div class="ub-stat-value" th:text="${siteCount} ?: 0">0</div>
+      </div>
+      <div class="ub-card">
+        <div class="ub-muted small" th:text="#{home.stat.users}">Users</div>
+        <div class="ub-stat-value" th:text="${userCount} ?: 0">0</div>
+      </div>
+      <div class="ub-card">
+        <div class="ub-muted small" th:text="#{home.stat.uptime}">Uptime</div>
+        <div class="ub-stat-value" th:text="${uptime} ?: '-'">-</div>
+      </div>
+    </div>
+
+    <div class="ub-card mb-4">
+      <h2 class="fs-5 mb-3" th:text="#{home.gettingStarted}">Getting started</h2>
+      <ol class="mb-0">
+        <li th:text="#{home.step.org}">Create your first organization.</li>
+        <li th:text="#{home.step.site}">Add a site to the organization.</li>
+        <li th:text="#{home.step.user}">Invite users and assign roles.</li>
+        <li th:text="#{home.step.masterData}">Load master data (items, partners, accounts).</li>
+      </ol>
+    </div>
+
+    <div class="ub-card">
+      <h2 class="fs-5 mb-3" th:text="#{home.recentAudit}">Recent activity</h2>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col" th:text="#{audit.time}">Time</th>
+              <th scope="col" th:text="#{audit.actor}">Actor</th>
+              <th scope="col" th:text="#{audit.action}">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="row : ${auditRows}">
+              <td th:text="${row.time}">2026-11-25 12:00 WIB</td>
+              <td th:text="${row.actor}">admin</td>
+              <td th:text="${row.action}">LOGIN</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(auditRows)}">
+              <td colspan="3" class="ub-muted text-center" th:text="#{home.empty}">No recent activity.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>

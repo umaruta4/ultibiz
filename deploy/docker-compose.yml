@@ -1,0 +1,48 @@
+services:
+  db:
+    image: mariadb:11.8
+    container_name: ultibiz-mariadb
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MARIADB_DATABASE: ${ULTIBIZ_DB_NAME:-ultibiz}
+      MARIADB_USER: ${ULTIBIZ_DB_USER:-ultibiz}
+      MARIADB_PASSWORD: ${ULTIBIZ_DB_PASSWORD:?Set ULTIBIZ_DB_PASSWORD in .env}
+      MARIADB_ROOT_PASSWORD: ${ULTIBIZ_DB_ROOT_PASSWORD:?Set ULTIBIZ_DB_ROOT_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:3311:3306"
+    volumes:
+      - ultibiz-db:/var/lib/mysql
+    command:
+      - --innodb-buffer-pool-size=128M
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    mem_limit: 384m
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: ultibiz-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      ULTIBIZ_DB_HOST: db
+      ULTIBIZ_DB_PORT: "3306"
+      ULTIBIZ_DB_NAME: ${ULTIBIZ_DB_NAME:-ultibiz}
+      ULTIBIZ_DB_USER: ${ULTIBIZ_DB_USER:-ultibiz}
+      ULTIBIZ_DB_PASSWORD: ${ULTIBIZ_DB_PASSWORD:?Set ULTIBIZ_DB_PASSWORD in .env}
+    ports:
+      - "18080:8080"
+
+volumes:
+  ultibiz-db:

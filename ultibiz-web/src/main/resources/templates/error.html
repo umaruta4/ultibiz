@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="#{error.title}">Something went wrong</title>
+  <script th:src="@{/js/theme.js}" src="/js/theme.js"></script>
+  <link rel="stylesheet" th:href="@{/vendor/bootstrap/css/bootstrap.min.css}" href="/vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css">
+</head>
+<body class="d-flex align-items-center justify-content-center min-vh-100">
+  <main class="text-center px-3" style="max-width: 480px;">
+    <div class="ub-brand fs-1" th:text="${status} ?: '500'">500</div>
+    <h1 class="fs-4 mt-2" th:text="#{error.title}">Something went wrong</h1>
+    <p class="ub-muted" th:text="#{error.contact}">Please contact your administrator if the problem persists.</p>
+    <a class="btn btn-primary" th:href="@{/}" href="/" th:text="#{error.backHome}">Back to dashboard</a>
+  </main>
+</body>
+</html>

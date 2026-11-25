@@ -1,0 +1,50 @@
+/* UltiBiz application JS — htmx wiring, CSRF, toasts, helpers. No deps. */
+(function () {
+  'use strict';
+
+  // --- CSRF injection for htmx requests -----------------------------------
+  // Spring Security exposes the token via <meta name="_csrf"> and the header
+  // name via <meta name="_csrf_header">.
+  document.body.addEventListener('htmx:configRequest', function (event) {
+    var tokenMeta = document.querySelector('meta[name="_csrf"]');
+    var headerMeta = document.querySelector('meta[name="_csrf_header"]');
+    if (tokenMeta && headerMeta) {
+      event.detail.headers[headerMeta.content] = tokenMeta.content;
+    }
+  });
+
+  // --- Error toast ---------------------------------------------------------
+  function toast(message) {
+    var el = document.createElement('div');
+    el.className = 'ub-toast';
+    el.setAttribute('role', 'alert');
+    el.style.cssText =
+      'position:fixed;bottom:1rem;right:1rem;z-index:1080;max-width:22rem;' +
+      'padding:.6rem 1rem;border-radius:.5rem;' +
+      'background:var(--ub-surface,#fff);color:var(--ub-text,#000);' +
+      'border:1px solid var(--ub-border,#ccc);box-shadow:0 2px 8px rgba(0,0,0,.25);';
+    el.textContent = message;
+    document.body.appendChild(el);
+    setTimeout(function () { el.remove(); }, 5000);
+  }
+
+  document.body.addEventListener('htmx:responseError', function () {
+    toast(document.documentElement.getAttribute('lang') === 'id'
+      ? 'Permintaan gagal. Silakan coba lagi.'
+      : 'Request failed. Please try again.');
+  });
+
+  // --- Public helpers ------------------------------------------------------
+  window.UltiBiz = window.UltiBiz || {};
+  window.UltiBiz.confirmDelete = function (form) {
+    var message = form.getAttribute('data-confirm') || 'Delete this record?';
+    if (window.confirm(message)) {
+      if (form.requestSubmit) {
+        form.requestSubmit();
+      } else {
+        form.submit();
+      }
+    }
+    return false;
+  };
+})();

@@ -1,0 +1,231 @@
+/* ==========================================================================
+   UltiBiz application stylesheet
+   Design tokens + layout helpers. Bootstrap 5.3 provides the base; this file
+   layers UltiBiz tokens on top via data-bs-theme (light/dark).
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Design tokens — light theme (default)
+   All text/background pairs meet WCAG AA contrast (>= 4.5:1).
+   -------------------------------------------------------------------------- */
+:root {
+  --ub-bg: #f6f7f9;
+  --ub-surface: #ffffff;
+  --ub-text: #1a2330;          /* ~15.5:1 on --ub-surface */
+  --ub-muted: #5a6472;         /* ~7.0:1 on --ub-surface */
+  --ub-border: #d5dae1;
+  --ub-brand: #0b5ed7;         /* ~5.9:1 on white */
+  --ub-brand-contrast: #ffffff;
+  --ub-radius: 0.5rem;
+  --ub-focus: #0b5ed7;
+  --ub-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+}
+
+/* --------------------------------------------------------------------------
+   Design tokens — dark theme overrides
+   -------------------------------------------------------------------------- */
+[data-bs-theme="dark"] {
+  --ub-bg: #0f141b;
+  --ub-surface: #171e27;
+  --ub-text: #e8edf4;          /* ~13.6:1 on --ub-surface */
+  --ub-muted: #a3adba;         /* ~5.8:1 on --ub-surface */
+  --ub-border: #2b3644;
+  --ub-brand: #6ea8fe;         /* ~6.0:1 on --ub-surface */
+  --ub-brand-contrast: #0f141b;
+  --ub-radius: 0.5rem;
+  --ub-focus: #9ec5fe;
+  --ub-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+body {
+  background-color: var(--ub-bg);
+  color: var(--ub-text);
+}
+
+/* --------------------------------------------------------------------------
+   Accessibility
+   -------------------------------------------------------------------------- */
+:focus-visible {
+  outline: 2px solid var(--ub-focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.ub-skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 1050;
+  padding: 0.5rem 1rem;
+  background: var(--ub-surface);
+  color: var(--ub-text);
+  border: 1px solid var(--ub-border);
+  border-radius: 0 0 var(--ub-radius) 0;
+}
+.ub-skip-link:focus {
+  left: 0;
+}
+
+/* --------------------------------------------------------------------------
+   App shell: sticky sidebar + topbar + content
+   -------------------------------------------------------------------------- */
+.ub-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
+
+.ub-topbar {
+  grid-column: 1 / -1;
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: var(--ub-surface);
+  border-bottom: 1px solid var(--ub-border);
+}
+
+.ub-sidebar {
+  grid-row: 2;
+  position: sticky;
+  top: 3.5rem;
+  align-self: start;
+  height: calc(100vh - 3.5rem);
+  overflow-y: auto;
+  padding: 1rem 0.75rem;
+  background: var(--ub-surface);
+  border-right: 1px solid var(--ub-border);
+}
+
+.ub-sidebar .nav-link {
+  color: var(--ub-muted);
+  border-radius: var(--ub-radius);
+  padding: 0.4rem 0.75rem;
+}
+.ub-sidebar .nav-link:hover {
+  color: var(--ub-text);
+  background: color-mix(in srgb, var(--ub-brand) 8%, transparent);
+}
+.ub-sidebar .nav-link.active,
+.ub-sidebar .nav-link[aria-current="page"] {
+  color: var(--ub-brand-contrast);
+  background: var(--ub-brand);
+}
+
+.ub-content {
+  grid-row: 2;
+  padding: 1.25rem 1.5rem 3rem;
+  min-width: 0; /* allow children to shrink in grid */
+}
+
+/* Responsive: below 992px the sidebar collapses into a horizontal top bar */
+@media (max-width: 991.98px) {
+  .ub-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr;
+  }
+  .ub-sidebar {
+    grid-row: 2;
+    position: static;
+    height: auto;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.5rem;
+    border-right: none;
+    border-bottom: 1px solid var(--ub-border);
+  }
+  .ub-sidebar .nav {
+    flex-direction: row !important;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+  }
+  .ub-content {
+    grid-row: 3;
+    padding: 1rem 1rem 3rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Cards: responsive grid list -> table-like on desktop
+   -------------------------------------------------------------------------- */
+.ub-card {
+  background: var(--ub-surface);
+  border: 1px solid var(--ub-border);
+  border-radius: var(--ub-radius);
+  box-shadow: var(--ub-shadow);
+  padding: 1rem;
+}
+
+.ub-card-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+/* Dense list of records: cards on mobile, table on desktop */
+.ub-list {
+  display: grid;
+  gap: 0.5rem;
+}
+.ub-list-row {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  background: var(--ub-surface);
+  border: 1px solid var(--ub-border);
+  border-radius: var(--ub-radius);
+}
+@media (min-width: 992px) {
+  .ub-list {
+    gap: 0;
+    border: 1px solid var(--ub-border);
+    border-radius: var(--ub-radius);
+    overflow: hidden;
+  }
+  .ub-list-row {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    align-items: center;
+    border: none;
+    border-radius: 0;
+    border-bottom: 1px solid var(--ub-border);
+  }
+  .ub-list-row:last-child {
+    border-bottom: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Misc
+   -------------------------------------------------------------------------- */
+.ub-muted {
+  color: var(--ub-muted);
+}
+
+.ub-brand {
+  color: var(--ub-brand);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ub-stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--ub-text);
+}

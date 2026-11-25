@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ultibiz-config
+  namespace: ultibiz
+  labels:
+    app.kubernetes.io/name: ultibiz
+data:
+  ULTIBIZ_DB_HOST: ultibiz-db
+  ULTIBIZ_DB_PORT: "3306"
+  ULTIBIZ_DB_NAME: ultibiz
+  SPRING_PROFILES_ACTIVE: prod

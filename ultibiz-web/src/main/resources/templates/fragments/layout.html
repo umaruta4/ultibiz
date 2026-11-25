@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:fragment="shell(title,content)" lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
+  <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
+  <title th:replace="${title}">UltiBiz</title>
+  <!-- theme.js must load first in <head> to apply data-bs-theme before first paint (no FOUC) -->
+  <script th:src="@{/js/theme.js}" src="/js/theme.js"></script>
+  <link rel="stylesheet" th:href="@{/vendor/bootstrap/css/bootstrap.min.css}" href="/vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css">
+</head>
+<body>
+  <a class="ub-skip-link" href="#main-content" th:text="#{common.skipToContent}">Skip to content</a>
+
+  <div class="ub-shell">
+    <header class="ub-topbar">
+      <a class="ub-brand fs-5" th:href="@{/}" href="/">UltiBiz</a>
+
+      <select class="form-select form-select-sm w-auto" aria-label="Organization / Site" disabled>
+        <option th:text="#{common.orgSitePlaceholder}">Default Organization / Default Site</option>
+      </select>
+
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-theme-toggle
+                aria-pressed="false" th:attr="aria-label=#{theme.toggle}">
+          <span data-theme-icon aria-hidden="true">&#9788;</span>
+        </button>
+
+        <div class="dropdown" th:if="${username != null and !#strings.isEmpty(username)}">
+          <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                  data-bs-toggle="dropdown" aria-expanded="false"
+                  th:text="${username}">user</button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <form th:action="@{/logout}" method="post" class="px-3 py-1">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="submit" class="btn btn-link btn-sm p-0" th:text="#{common.logout}">Log out</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <nav class="ub-sidebar" aria-label="Primary">
+      <ul class="nav flex-column">
+        <li class="nav-item"><a class="nav-link active" th:href="@{/}" href="/" aria-current="page" th:text="#{nav.dashboard}">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.masterData}">Master Data</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.accounting}">Accounting</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.sales}">Sales</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.orders}">Orders</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.manufacturing}">Manufacturing</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.assets}">Assets</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.hrm}">HRM</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.projects}">Projects</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.crm}">CRM</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.knowledge}">Knowledge</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.helpdesk}">Helpdesk</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.admin}">Admin</a></li>
+      </ul>
+    </nav>
+
+    <main id="main-content" class="ub-content">
+      <th:block th:replace="${content}"></th:block>
+    </main>
+  </div>
+
+  <footer class="text-center py-3 ub-muted small border-top">
+    <span th:text="#{common.appVersion} + ' ' + (${appVersion} ?: 'dev')">Version dev</span>
+    &middot;
+    <span id="server-time" th:text="${serverTime} ?: 'YYYY-MM-DD HH:MM WIB'">YYYY-MM-DD HH:MM WIB</span>
+  </footer>
+
+  <script th:src="@{/vendor/bootstrap/js/bootstrap.bundle.min.js}" src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script th:src="@{/vendor/htmx/htmx.min.js}" src="/vendor/htmx/htmx.min.js"></script>
+  <script th:src="@{/js/app.js}" src="/js/app.js"></script>
+</body>
+</html>

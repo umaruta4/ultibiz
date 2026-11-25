@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: ultibiz
+  datasource:
+    url: jdbc:mariadb://${ULTIBIZ_DB_HOST:127.0.0.1}:${ULTIBIZ_DB_PORT:3311}/${ULTIBIZ_DB_NAME:ultibiz}?useUnicode=true&characterEncoding=UTF-8
+    username: ${ULTIBIZ_DB_USER:ultibiz}
+    password: ${ULTIBIZ_DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 5000
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    validate-migration-naming: true
+  jooq:
+    sql-dialect: MARIADB
+  session:
+    store-type: jdbc
+    timeout: 8h
+    jdbc:
+      initialize-schema: never
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+server:
+  port: 8080
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+info:
+  app:
+    name: UltiBiz
+    version: 0.1.0-SNAPSHOT
+
+ultibiz:
+  admin:
+    password: ${ULTIBIZ_ADMIN_PASSWORD:}
+
+logging:
+  level:
+    root: info
+    com.ultibiz: info

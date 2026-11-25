@@ -1,0 +1,21 @@
+# Maven / Java
+target/
+*.class
+*.jar
+!ultibiz-web/src/main/resources/static/vendor/**/*.jar
+
+# Environment / secrets
+.env
+deploy/.env
+deploy/k8s/secret.yaml
+
+# Node (never used at runtime, but keep the tree clean)
+node_modules/
+
+# Logs
+*.log
+
+# IDEs
+.idea/
+.vscode/
+*.iml
