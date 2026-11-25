@@ -19,3 +19,8 @@ node_modules/
 .idea/
 .vscode/
 *.iml
+
+# Authoring prompts: internal working documents, not part of the published repo
+prompts/
+docs/ULTIBIZ_MASTER_PROMPT.md
+docs/ULTIBIZ_PHASE_PROMPTS.md
