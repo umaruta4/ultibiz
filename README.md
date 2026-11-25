@@ -12,13 +12,44 @@ Node/npm/bundler). Runs at root context (`/`).
 | **P0** | Foundation: Maven multi-module, schema baseline, security/login, DB-backed sessions, web shell, dark mode, audit, health probes, Flyway, deploy tooling | **done** |
 | **P1** | Master data + multi-site (product, party, warehouse/rack/bin/dock, production line, work center), numbering engine, country/tax SPI, CSV import/export, master-data screens | **done** |
 | **P2** | Accounting: chart of accounts, fiscal periods, double-entry posting engine, reversals, tax packs (ID PPN + EU VAT), multi-currency, trial balance, accounting screens | **done** (core) |
-| P3 | Order management + manufacturing (BOM, work orders, routing) | planned |
+| **P3** | Sales & purchase orders, goods receipts, stock (moving average), BOM + work orders, order/inventory/manufacturing screens | **done** (core) |
 | P4 | Asset management + HRM | planned |
 | P5 | Projects + CRM + sales pipeline | planned |
 | P6 | Dashboard + Knowledge Vault (RAG) + Helpdesk | planned |
 | P7 | Data exchange: EDI, Peppol UBL, REST/JSON | planned |
 | P8 | Offline sync, admin console, upgrades | planned |
 | P9 | AI assistant, Kubernetes hardening, performance | planned |
+
+## What P3 delivers
+
+- **Sales orders**: line totals with discounts, tax per the country pack, and a
+  **credit limit check** that refuses to store an over-limit order.
+- **Purchase orders**: receipts book the goods into stock and update the
+  received quantities; partial receipts keep the order `PARTIALLY_RECEIVED`.
+- **Stock**: `stock_balance` with a **moving average cost** and an immutable
+  `stock_movement` ledger; an issue that would drive a balance negative is
+  refused. The balance row is locked before it changes.
+- **Goods receipts**: one document per physical movement (purchase, delivery,
+  production), linked to its source order.
+- **Manufacturing**: a work order explodes the bill of material into material
+  requirements (with scrap), the release verifies that the materials are
+  really in stock, the issue takes them out, and the completion books the
+  finished goods in at the average material cost.
+- **Screens**: sales/purchase orders (list, form, detail with confirm /
+  deliver / receive), stock overview, work orders (list, form, detail with
+  release / issue / complete).
+
+Details: schema migration `V202611250004__p3_orders_stock.sql`.
+
+### Known P3 gaps
+
+- Deliveries and receipts act on the whole outstanding quantity per line, not
+  on a chosen quantity per line.
+- There is no stock transfer between warehouses and no stock-taking (cycle
+  count) yet.
+- Routing / capacity planning and back-flushing are not implemented.
+- The AR / AP side of an order (invoice, allocation, ageing, three-way match)
+  is the next accounting slice.
 
 ## What P2 delivers
 

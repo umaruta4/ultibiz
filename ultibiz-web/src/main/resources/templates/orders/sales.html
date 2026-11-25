@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{om.title}">Orders</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{om.salesOrders}">Sales orders</h1>
+      <a class="btn btn-sm btn-primary" th:href="@{/orders/sales/new}" th:text="#{om.new}">New</a>
+    </div>
+    <form class="row g-2 mb-3" method="get" th:action="@{/orders/sales}">
+      <div class="col-8 col-md-3">
+        <select class="form-select" name="status">
+          <option value="" th:text="#{md.all}">All</option>
+          <option value="DRAFT" th:selected="${status == 'DRAFT'}" th:text="DRAFT">DRAFT</option>
+          <option value="CONFIRMED" th:selected="${status == 'CONFIRMED'}" th:text="CONFIRMED">CONFIRMED</option>
+          <option value="PARTIALLY_SHIPPED" th:selected="${status == 'PARTIALLY_SHIPPED'}" th:text="PARTIALLY_SHIPPED">PARTIALLY_SHIPPED</option>
+          <option value="SHIPPED" th:selected="${status == 'SHIPPED'}" th:text="SHIPPED">SHIPPED</option>
+        </select>
+      </div>
+      <div class="col-4 col-md-2 d-grid"><button class="btn btn-outline-primary" type="submit" th:text="#{md.filter}">Filter</button></div>
+    </form>
+    <div class="ub-card mb-3">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr>
+            <th scope="col" th:text="#{om.number}">Number</th>
+            <th scope="col" th:text="#{om.date}">Date</th>
+            <th scope="col" th:text="#{om.party}">Party</th>
+            <th scope="col" class="text-end" th:text="#{om.total}">Total</th>
+            <th scope="col" th:text="#{om.status}">Status</th>
+          </tr></thead>
+          <tbody>
+            <tr th:each="o : ${orders.items()}">
+              <td><a class="font-monospace" th:href="@{/orders/sales/{id}(id=${o.id()})}" th:text="${o.orderNumber()}">SO-1</a></td>
+              <td th:text="${o.orderDate()}">2026-11-15</td>
+              <td th:text="${o.partyId()}">1</td>
+              <td class="text-end" th:text="${o.total()}">0.00</td>
+              <td><span class="badge text-bg-primary" th:text="${o.status()}">DRAFT</span></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(orders.items())}"><td colspan="5" class="ub-muted text-center" th:text="#{md.noData}">No orders.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>

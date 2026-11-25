@@ -68,6 +68,11 @@ public class PartyService {
         return true;
     }
 
+    /** One party inside the caller's scope, if visible. */
+    public java.util.Optional<Party> findById(SiteScope scope, long id) {
+        return parties.findById(scope, id);
+    }
+
     public List<PartyAddress> addresses(long partyId) {
         return parties.addresses(partyId);
     }

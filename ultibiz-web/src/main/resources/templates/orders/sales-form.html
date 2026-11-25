@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{om.title}">Orders</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <h1 class="fs-4 mb-3" th:text="#{om.newSalesOrder}">New sales order</h1>
+    <div class="alert alert-danger py-2" role="alert" th:if="${error != null}" th:text="${error}">Error</div>
+    <form method="post" th:action="@{/orders/sales}" class="ub-card">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-md-4">
+          <label class="form-label" for="partyId" th:text="#{om.customer}">Customer</label>
+          <select class="form-select" id="partyId" name="partyId" required>
+            <option value="" th:text="#{om.pickParty}">— pick —</option>
+            <option th:each="p : ${parties}" th:value="${p.id()}" th:text="${p.code()} + ' — ' + ${p.name()}">C</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label" for="orderDate" th:text="#{om.date}">Order date</label>
+          <input class="form-control" type="date" id="orderDate" name="orderDate" th:value="${today}">
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label" for="deliveryDate" th:text="#{om.deliveryDate}">Delivery date</label>
+          <input class="form-control" type="date" id="deliveryDate" name="deliveryDate" th:value="${today}">
+        </div>
+        <div class="col-12 col-md-2">
+          <label class="form-label" for="warehouseId" th:text="#{om.warehouse}">Warehouse</label>
+          <select class="form-select" id="warehouseId" name="warehouseId">
+            <option value="" th:text="#{om.pickWarehouse}">— pick —</option>
+            <option th:each="w : ${warehouses}" th:value="${w.id()}" th:text="${w.code()}">W</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label" for="notes" th:text="#{om.notes}">Notes</label>
+          <input class="form-control" type="text" id="notes" name="notes">
+        </div>
+      </div>
+      <h2 class="fs-6" th:text="#{om.lines}">Lines</h2>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead><tr>
+            <th scope="col" th:text="#{om.product}">Product</th>
+            <th scope="col" class="text-end" th:text="#{om.quantity}">Qty</th>
+            <th scope="col" class="text-end" th:text="#{om.unitPrice}">Unit price</th>
+            <th scope="col" class="text-end" th:text="#{om.discount}">Discount</th>
+          </tr></thead>
+          <tbody>
+            <tr th:each="i : ${#numbers.sequence(1, lineCount)}">
+              <td>
+                <select class="form-select form-select-sm" th:name="${'line' + i + 'ProductId'}">
+                  <option value="" th:text="#{om.pickProduct}">— pick —</option>
+                  <option th:each="p : ${products}" th:value="${p.id()}" th:text="${p.code()} + ' — ' + ${p.name()}">P</option>
+                </select>
+              </td>
+              <td><input class="form-control form-control-sm text-end" type="number" step="0.001" min="0" th:name="${'line' + i + 'Qty'}"></td>
+              <td><input class="form-control form-control-sm text-end" type="number" step="0.01" min="0" th:name="${'line' + i + 'Price'}"></td>
+              <td><input class="form-control form-control-sm text-end" type="number" step="0.0001" min="0" max="1" th:name="${'line' + i + 'Discount'}"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex gap-2 mt-4">
+        <button class="btn btn-primary" type="submit" th:text="#{om.create}">Create</button>
+        <a class="btn btn-outline-secondary" th:href="@{/orders/sales}" th:text="#{md.cancel}">Cancel</a>
+      </div>
+    </form>
+  </th:block>
+</body>
+</html>

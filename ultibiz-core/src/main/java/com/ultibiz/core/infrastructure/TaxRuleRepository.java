@@ -44,6 +44,12 @@ public class TaxRuleRepository {
         return rec == null ? Optional.empty() : Optional.of(map(rec));
     }
 
+    /** The code of a tax category (used to pick the tax pack rate). */
+    public java.util.Optional<String> categoryCode(long categoryId) {
+        Object code = dsl.fetchValue("SELECT code FROM tax_category WHERE id = ?", categoryId);
+        return code == null ? java.util.Optional.empty() : java.util.Optional.of(String.valueOf(code));
+    }
+
     public List<TaxRule> listRules(long organizationId, String countryCode) {
         return dsl.fetch("""
                 SELECT r.id, c.code AS category_code, r.country_code, r.name, r.rate,

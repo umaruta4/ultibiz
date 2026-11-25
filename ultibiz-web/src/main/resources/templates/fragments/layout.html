@@ -77,9 +77,12 @@
         <li class="nav-item">
           <a class="nav-link ps-3 py-1 small" th:href="@{/accounting/trial-balance}" th:text="#{acct.trialBalance}">Trial balance</a>
         </li>
-        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.sales}">Sales</a></li>
-        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.orders}">Orders</a></li>
-        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.manufacturing}">Manufacturing</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/orders/sales}" th:text="#{nav.sales}">Sales</a></li>
+        <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/orders/sales}" th:text="#{om.salesOrders}">Sales orders</a></li>
+        <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/orders/purchase}" th:text="#{om.purchaseOrders}">Purchase orders</a></li>
+        <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/inventory}" th:text="#{inv.title}">Stock</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/manufacturing/work-orders}" th:text="#{nav.manufacturing}">Manufacturing</a></li>
+        <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/manufacturing/work-orders}" th:text="#{mfg.title}">Work orders</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.assets}">Assets</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.hrm}">HRM</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.projects}">Projects</a></li>

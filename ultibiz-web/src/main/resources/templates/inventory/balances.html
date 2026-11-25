@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{om.title}">Orders</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <h1 class="fs-4 mb-3" th:text="#{inv.title}">Stock</h1>
+    <div class="ub-card mb-3">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr>
+            <th scope="col" th:text="#{om.product}">Product</th>
+            <th scope="col" th:text="#{om.warehouse}">Warehouse</th>
+            <th scope="col" class="text-end" th:text="#{inv.quantity}">Quantity</th>
+            <th scope="col" class="text-end" th:text="#{inv.averageCost}">Average cost</th>
+            <th scope="col" class="text-end" th:text="#{inv.value}">Value</th>
+          </tr></thead>
+          <tbody>
+            <tr th:each="b : ${balances}">
+              <td class="font-monospace" th:text="${b.productId()}">1</td>
+              <td th:text="${b.warehouseId()}">1</td>
+              <td class="text-end" th:text="${b.quantity()}">0.000</td>
+              <td class="text-end" th:text="${b.averageCost()}">0.0000</td>
+              <td class="text-end" th:text="${b.totalValue()}">0.00</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(balances)}"><td colspan="5" class="ub-muted text-center" th:text="#{md.noData}">No stock.</td></tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colspan="2" class="text-end" th:text="#{om.total}">Total</th>
+              <th class="text-end" th:text="${totalQty}">0.000</th>
+              <th></th>
+              <th class="text-end" th:text="${totalValue}">0.00</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>
