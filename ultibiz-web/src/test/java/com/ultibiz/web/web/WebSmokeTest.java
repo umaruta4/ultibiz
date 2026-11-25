@@ -12,16 +12,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = {HomeController.class, ThemeController.class})
@@ -55,18 +55,17 @@ class WebSmokeTest {
     void homeRequiresAuthentication() throws Exception {
         mvc.perform(get("/"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("**/login"));
+                .andExpect(redirectedUrl("/login"));
     }
 
     @Test
-    @WithMockUser(username = "admin", roles = "ADMIN")
     void homeRendersForAuthenticatedUser() throws Exception {
         when(organizations.count()).thenReturn(1L);
         when(sites.countVisibleTo(any())).thenReturn(2L);
         when(users.count()).thenReturn(1L);
         when(audit.recent(any(Long.class), any(Integer.class))).thenReturn(List.of());
 
-        mvc.perform(get("/"))
+        mvc.perform(get("/").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("UltiBiz")));
     }
