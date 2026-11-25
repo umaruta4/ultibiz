@@ -62,7 +62,21 @@
         <li class="nav-item">
           <a class="nav-link ps-3 py-1 small" th:href="@{/master/production-lines}" th:text="#{nav.masterDataProductionLines}">Production lines</a>
         </li>
-        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.accounting}">Accounting</a></li>
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/accounting/accounts}" href="/accounting/accounts" th:text="#{nav.accounting}">Accounting</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link ps-3 py-1 small" th:href="@{/accounting/accounts}" th:text="#{acct.accounts}">Chart of accounts</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link ps-3 py-1 small" th:href="@{/accounting/journals}" th:text="#{acct.journals}">Journals</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link ps-3 py-1 small" th:href="@{/accounting/periods}" th:text="#{acct.periods}">Fiscal periods</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link ps-3 py-1 small" th:href="@{/accounting/trial-balance}" th:text="#{acct.trialBalance}">Trial balance</a>
+        </li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.sales}">Sales</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.orders}">Orders</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.manufacturing}">Manufacturing</a></li>

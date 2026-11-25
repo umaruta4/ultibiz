@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{acct.title}">Accounting</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{acct.journals}">Journals</h1>
+      <a class="btn btn-sm btn-primary" th:href="@{/accounting/journals/new}" th:text="#{acct.newJournal}">New journal</a>
+    </div>
+
+    <form class="row g-2 mb-3" method="get" th:action="@{/accounting/journals}">
+      <div class="col-6 col-md-3">
+        <label class="form-label small" for="from" th:text="#{acct.from}">From</label>
+        <input class="form-control form-control-sm" type="date" id="from" name="from" th:value="${from}">
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label small" for="to" th:text="#{acct.to}">To</label>
+        <input class="form-control form-control-sm" type="date" id="to" name="to" th:value="${to}">
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label small" for="country" th:text="#{acct.country}">Country</label>
+        <input class="form-control form-control-sm" type="text" id="country" name="country" maxlength="2"
+               th:value="${country}">
+      </div>
+      <div class="col-6 col-md-2 d-grid align-self-end">
+        <button class="btn btn-outline-primary btn-sm" type="submit" th:text="#{md.filter}">Filter</button>
+      </div>
+    </form>
+
+    <div class="ub-card mb-3">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col" th:text="#{acct.number}">Number</th>
+              <th scope="col" th:text="#{acct.date}">Date</th>
+              <th scope="col" th:text="#{acct.type}">Type</th>
+              <th scope="col" th:text="#{acct.reference}">Reference</th>
+              <th scope="col" th:text="#{acct.description}">Description</th>
+              <th scope="col" class="text-end" th:text="#{acct.debit}">Debit</th>
+              <th scope="col" class="text-end" th:text="#{acct.credit}">Credit</th>
+              <th scope="col" th:text="#{acct.status}">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="j : ${journals.items()}">
+              <td>
+                <a class="font-monospace" th:href="@{/accounting/journals/{id}(id=${j.id()})}"
+                   th:text="${j.journalNumber()}">JV-2026-000001</a>
+              </td>
+              <td th:text="${j.postingDate()}">2026-11-15</td>
+              <td th:text="${j.journalType()}">GENERAL</td>
+              <td th:text="${j.reference()} ?: '-'">-</td>
+              <td th:text="${j.description()} ?: '-'">-</td>
+              <td class="text-end" th:text="${j.totalDebit()}">0.00</td>
+              <td class="text-end" th:text="${j.totalCredit()}">0.00</td>
+              <td>
+                <span class="badge text-bg-success" th:if="${j.status() == 'POSTED'}" th:text="#{acct.posted}">Posted</span>
+                <span class="badge text-bg-secondary" th:unless="${j.status() == 'POSTED'}" th:text="#{acct.reversed}">Reversed</span>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(journals.items())}">
+              <td colspan="8" class="ub-muted text-center" th:text="#{md.noData}">No journals found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <span class="ub-muted small"
+            th:text="#{md.pageOf} + ' ' + ${journals.page + 1} + ' / ' + ${journals.pageCount()} + ' (' + ${journals.total()} + ' ' + #{md.rows} + ')'">
+        page 1 / 1</span>
+      <div class="btn-group">
+        <a class="btn btn-sm btn-outline-secondary" th:disabled="${!journals.hasPrevious()}"
+           th:href="@{/accounting/journals(from=${from},to=${to},country=${country},page=${journals.page - 1},size=${size})}"
+           th:text="#{md.previous}">Previous</a>
+        <a class="btn btn-sm btn-outline-secondary" th:disabled="${!journals.hasNext()}"
+           th:href="@{/accounting/journals(from=${from},to=${to},country=${country},page=${journals.page + 1},size=${size})}"
+           th:text="#{md.next}">Next</a>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>

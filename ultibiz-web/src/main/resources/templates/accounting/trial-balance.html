@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{acct.title}">Accounting</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <h1 class="fs-4 mb-3" th:text="#{acct.trialBalance}">Trial balance</h1>
+
+    <form class="row g-2 mb-3" method="get" th:action="@{/accounting/trial-balance}">
+      <div class="col-6 col-md-3">
+        <label class="form-label small" for="from" th:text="#{acct.from}">From</label>
+        <input class="form-control form-control-sm" type="date" id="from" name="from" th:value="${from}">
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label small" for="to" th:text="#{acct.to}">To</label>
+        <input class="form-control form-control-sm" type="date" id="to" name="to" th:value="${to}">
+      </div>
+      <div class="col-12 col-md-3 d-grid align-self-end">
+        <button class="btn btn-outline-primary btn-sm" type="submit" th:text="#{md.filter}">Filter</button>
+      </div>
+      <div class="col-12 col-md-3 align-self-end">
+        <div class="alert py-2 mb-0" th:classappend="${balanced} ? 'alert-success' : 'alert-warning'">
+          <span th:text="${balanced} ? #{acct.balanced} : #{acct.unbalanced}">Balanced</span>
+        </div>
+      </div>
+    </form>
+
+    <div class="ub-card">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col" th:text="#{acct.account}">Account</th>
+              <th scope="col" th:text="#{acct.name}">Name</th>
+              <th scope="col" th:text="#{acct.type}">Type</th>
+              <th scope="col" class="text-end" th:text="#{acct.debit}">Debit</th>
+              <th scope="col" class="text-end" th:text="#{acct.credit}">Credit</th>
+              <th scope="col" class="text-end" th:text="#{acct.net}">Net</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="r : ${rows}">
+              <td class="font-monospace" th:text="${r.accountCode()}">1110</td>
+              <td th:text="${r.accountName()}">Bank Account</td>
+              <td th:text="${r.accountType()}">ASSET</td>
+              <td class="text-end" th:text="${r.totalDebit()}">0.00</td>
+              <td class="text-end" th:text="${r.totalCredit()}">0.00</td>
+              <td class="text-end" th:text="${r.totalDebit().subtract(r.totalCredit())}">0.00</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colspan="3" class="text-end" th:text="#{acct.total}">Total</th>
+              <th class="text-end" th:text="${totalDebit}">0.00</th>
+              <th class="text-end" th:text="${totalCredit}">0.00</th>
+              <th class="text-end" th:text="${totalDebit.subtract(totalCredit)}">0.00</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>

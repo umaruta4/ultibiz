@@ -11,7 +11,7 @@ Node/npm/bundler). Runs at root context (`/`).
 |---|---|---|
 | **P0** | Foundation: Maven multi-module, schema baseline, security/login, DB-backed sessions, web shell, dark mode, audit, health probes, Flyway, deploy tooling | **done** |
 | **P1** | Master data + multi-site (product, party, warehouse/rack/bin/dock, production line, work center), numbering engine, country/tax SPI, CSV import/export, master-data screens | **done** |
-| P2 | Accounting (double entry, fiscal periods, statutory reports) | planned |
+| **P2** | Accounting: chart of accounts, fiscal periods, double-entry posting engine, reversals, tax packs (ID PPN + EU VAT), multi-currency, trial balance, accounting screens | **done** (core) |
 | P3 | Order management + manufacturing (BOM, work orders, routing) | planned |
 | P4 | Asset management + HRM | planned |
 | P5 | Projects + CRM + sales pipeline | planned |
@@ -19,6 +19,40 @@ Node/npm/bundler). Runs at root context (`/`).
 | P7 | Data exchange: EDI, Peppol UBL, REST/JSON | planned |
 | P8 | Offline sync, admin console, upgrades | planned |
 | P9 | AI assistant, Kubernetes hardening, performance | planned |
+
+## What P2 delivers
+
+- **Chart of accounts**: hierarchical, organization-scoped, optional country,
+  postable flag; seeded with a standard Indonesian chart of accounts.
+- **Fiscal periods**: per country and month, `OPEN` / `CLOSED` / `REOPENED`;
+  closing is audited, reopening needs the permission
+  `accounting.period.reopen` and is audited too.
+- **Posting engine**: a journal is posted only when it balances, every line
+  carries exactly one side, the account is postable and the period is open.
+  Header, lines, document number and audit entry are written in **one**
+  transaction with the period row locked (`SELECT … FOR UPDATE`).
+- **Immutability**: posted journals are never edited; a correction is a
+  reversal that mirrors the lines and marks the original `REVERSED`.
+- **Tax packs** behind the `TaxPack` SPI: Indonesia PPN (11 % / 2 % / exempt)
+  and an EU VAT pack (20 %, document-level rounding), plus a default pack that
+  reads the effective-dated rules from the database.
+- **Multi-currency**: `FxService` + `FxRateProvider` SPI; the ledger keeps the
+  transaction amounts *and* the functional-currency amounts.
+- **Screens**: chart of accounts, journal list, journal editor with a live
+  balance check, journal detail with reversal, fiscal period calendar and the
+  trial balance.
+
+Details: [`docs/P2-ACCOUNTING.md`](docs/P2-ACCOUNTING.md) ·
+[`docs/adr/ADR-003-posting-engine.md`](docs/adr/ADR-003-posting-engine.md)
+
+### Known P2 gaps
+
+- AR / AP (invoices, bills, allocations, ageing, three-way match), bank
+  statements and reconciliation are not built yet — they are the next slice.
+- Year-end closing and carry-forward are not automated; a period can be closed
+  and reopened by hand.
+- No approval thresholds: posting rights come from the role, not from an
+  amount limit.
 
 ## What P1 delivers
 

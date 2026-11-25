@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{acct.title}">Accounting</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{acct.accounts}">Chart of accounts</h1>
+      <form method="get" th:action="@{/accounting/accounts}" class="d-flex align-items-center gap-2">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="showInactive" value="true" id="showInactive"
+                 th:checked="${showInactive}">
+          <label class="form-check-label small" for="showInactive" th:text="#{acct.showInactive}">Show inactive</label>
+        </div>
+        <button class="btn btn-sm btn-outline-primary" type="submit" th:text="#{md.filter}">Filter</button>
+      </form>
+    </div>
+
+    <div class="ub-card">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col" th:text="#{acct.account}">Account</th>
+              <th scope="col" th:text="#{acct.name}">Name</th>
+              <th scope="col" th:text="#{acct.type}">Type</th>
+              <th scope="col" th:text="#{acct.normalBalance}">Normal balance</th>
+              <th scope="col" th:text="#{acct.status}">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="row : ${rows}">
+              <td th:classappend="${row.depth() > 0} ? 'ps-' + ${row.depth() * 2} : ''">
+                <span class="font-monospace fw-semibold" th:text="${row.account().code()}">1000</span>
+              </td>
+              <td th:text="${row.account().name()}">Assets</td>
+              <td th:text="${row.account().accountType()}">ASSET</td>
+              <td th:text="${row.account().normalBalance()}">DEBIT</td>
+              <td>
+                <span class="badge text-bg-success" th:if="${row.account().postable()}" th:text="#{acct.postable}">Postable</span>
+                <span class="badge text-bg-warning" th:unless="${row.account().active()}" th:text="#{md.inactive}">Inactive</span>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(rows)}">
+              <td colspan="5" class="ub-muted text-center" th:text="#{md.noData}">No accounts found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>

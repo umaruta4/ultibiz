@@ -48,3 +48,35 @@
     return false;
   };
 })();
+
+// --- journal editor: live debit/credit balance ------------------------------
+(function () {
+  'use strict';
+  function recalc() {
+    var debit = 0, credit = 0;
+    document.querySelectorAll('.journal-debit').forEach(function (el) {
+      debit += parseFloat(el.value || '0') || 0;
+    });
+    document.querySelectorAll('.journal-credit').forEach(function (el) {
+      credit += parseFloat(el.value || '0') || 0;
+    });
+    var d = document.getElementById('journal-total-debit');
+    var c = document.getElementById('journal-total-credit');
+    var diff = document.getElementById('journal-difference');
+    if (d) { d.textContent = debit.toFixed(2); }
+    if (c) { c.textContent = credit.toFixed(2); }
+    if (diff) {
+      var delta = debit - credit;
+      diff.textContent = delta.toFixed(2);
+      diff.classList.toggle('text-danger', Math.abs(delta) > 0.005);
+      diff.classList.toggle('text-success', Math.abs(delta) <= 0.005);
+    }
+  }
+  document.addEventListener('input', function (event) {
+    var target = event.target;
+    if (target && (target.classList.contains('journal-debit') || target.classList.contains('journal-credit'))) {
+      recalc();
+    }
+  });
+  document.addEventListener('DOMContentLoaded', recalc);
+})();
