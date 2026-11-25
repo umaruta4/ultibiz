@@ -15,8 +15,14 @@
       <h1 class="ub-brand text-center fs-3 mb-1">UltiBiz</h1>
       <p class="text-center ub-muted small mb-4" th:text="#{login.subtitle}">Sign in to your workspace</p>
 
-      <div th:if="${param.error != null}" class="alert alert-danger py-2" role="alert"
+      <div th:if="${param.error != null and param.error[0] == 'csrf'}" class="alert alert-warning py-2" role="alert"
+           th:text="#{login.csrfError}">Your session expired. Please sign in again.</div>
+
+      <div th:if="${param.error != null and param.error[0] != 'csrf'}" class="alert alert-danger py-2" role="alert"
            th:text="#{login.error}">Invalid username or password.</div>
+
+      <div th:if="${param.logout != null}" class="alert alert-info py-2" role="status"
+           th:text="#{login.logout}">You have been signed out.</div>
 
       <form th:action="@{/login}" method="post">
         <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">

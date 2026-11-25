@@ -1,13 +1,16 @@
 package com.ultibiz.web.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 
 /**
  * Web security: form login + DB-backed sessions, CSRF on everything
@@ -17,6 +20,24 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    /**
+     * A stale CSRF token (expired session, tab left open across a restart)
+     * must not show the user a bare 403 JSON page: bounce back to the login
+     * form with an explanatory message instead.
+     */
+    @Bean
+    AccessDeniedHandler csrfFriendlyAccessDeniedHandler() {
+        return (request, response, accessDeniedException) -> {
+            if (accessDeniedException instanceof AccessDeniedException
+                    && accessDeniedException.getMessage() != null
+                    && accessDeniedException.getMessage().toLowerCase().contains("csrf")) {
+                response.sendRedirect(request.getContextPath() + "/login?error=csrf");
+                return;
+            }
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+        };
+    }
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -37,9 +58,11 @@ public class SecurityConfig {
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout")
                 .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID"))
+                .deleteCookies("SESSION"))
             .sessionManagement(session -> session
                 .sessionFixation(fixation -> fixation.migrateSession()))
+            .exceptionHandling(ex -> ex
+                .accessDeniedHandler(csrfFriendlyAccessDeniedHandler()))
             .headers(headers -> headers
                 .contentSecurityPolicy(csp -> csp.policyDirectives(
                         "default-src 'self'; "
