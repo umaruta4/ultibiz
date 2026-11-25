@@ -10,7 +10,7 @@ Node/npm/bundler). Runs at root context (`/`).
 | Phase | Scope | State |
 |---|---|---|
 | **P0** | Foundation: Maven multi-module, schema baseline, security/login, DB-backed sessions, web shell, dark mode, audit, health probes, Flyway, deploy tooling | **done** |
-| **P1** | Master data + multi-site (product, party, warehouse/rack/bin/dock, production line, work center), numbering engine, country/tax SPI, CSV import/export, master-data screens | **in progress** |
+| **P1** | Master data + multi-site (product, party, warehouse/rack/bin/dock, production line, work center), numbering engine, country/tax SPI, CSV import/export, master-data screens | **done** |
 | P2 | Accounting (double entry, fiscal periods, statutory reports) | planned |
 | P3 | Order management + manufacturing (BOM, work orders, routing) | planned |
 | P4 | Asset management + HRM | planned |
@@ -19,6 +19,36 @@ Node/npm/bundler). Runs at root context (`/`).
 | P7 | Data exchange: EDI, Peppol UBL, REST/JSON | planned |
 | P8 | Offline sync, admin console, upgrades | planned |
 | P9 | AI assistant, Kubernetes hardening, performance | planned |
+
+## What P1 delivers
+
+- **Master data**: products (UOM, barcode, batch/serial flags, standard cost),
+  parties (tax id, credit limit, payment terms), warehouses with racks, bins
+  and docks, production lines, work centers, work calendar.
+- **Multi-site**: every master row carries `organization_id` + `site_id`;
+  `site_id IS NULL` = shared by all sites of the organization. Scoping is
+  enforced in the repository layer (`SiteScopedSql`), never in the UI.
+- **Numbering engine**: per document type + scope, prefix, padding, monthly /
+  fiscal-year restart, concurrency-safe (row lock, single transaction).
+  200 parallel callers produce contiguous, duplicate-free numbers.
+- **Tax SPI**: `TaxRuleProvider` with effective-dated rules; every computed
+  line snapshots the rule it used.
+- **CSV import/export** for products and parties with a row-level validation
+  report, downloadable error CSV and dry-run mode.
+- **Screens**: `/master/products` (list, search, filter, paging, export, import,
+  create/edit form), `/master/parties`, `/master/warehouses` (with racks, bins
+  and docks), `/master/production-lines` (with work centers).
+
+Details: [`docs/P1-MASTER-DATA.md`](docs/P1-MASTER-DATA.md) ·
+[`docs/adr/ADR-002-master-data-scoping-and-numbering.md`](docs/adr/ADR-002-master-data-scoping-and-numbering.md)
+
+### Known P1 gaps
+
+- Detail/edit forms exist for products only; parties, warehouses and production
+  lines are read-only in the UI (data comes from the migration or CSV import).
+- Column chooser, saved filters per user and print view are not implemented.
+- Per-module message bundles (`messages-masterdata.properties`) are not split
+  out yet — all keys live in the two main bundles.
 
 ## Modules
 
@@ -38,7 +68,9 @@ mvn -B verify                       # unit tests + WAR
 ```
 
 Integration tests run against a real MariaDB and are opt-in (they need a
-database, so they never run by accident in CI):
+database, so they never run by accident in CI). The database is prepared by
+Flyway itself (`clean` + `migrate`), so the schema under test is always the
+migration scripts:
 
 ```bash
 mvn -B verify \
@@ -72,6 +104,12 @@ curl -s http://10.10.70.12:18080/actuator/health
 Tomcat 11, MariaDB container, systemd unit) idempotently.
 Full operational notes: [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
 Architecture decisions: [`docs/adr/`](docs/adr/).
+
+## Auditing
+
+```bash
+tools/i18n-audit.sh    # every key present in en + id, every #{key} resolvable
+```
 
 ## Conventions
 

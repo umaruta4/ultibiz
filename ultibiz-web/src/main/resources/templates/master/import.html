@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{md.title}">Master Data</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <h1 class="fs-4 mb-3" th:text="#{md.importReport}">Import report</h1>
+
+    <div class="ub-card mb-3">
+      <dl class="row mb-0">
+        <dt class="col-sm-3" th:text="#{md.kind}">Master</dt>
+        <dd class="col-sm-9" th:text="${kind}">Products</dd>
+        <dt class="col-sm-3" th:text="#{md.totalRows}">Rows read</dt>
+        <dd class="col-sm-9" th:text="${report.totalRows()}">0</dd>
+        <dt class="col-sm-3" th:text="#{md.acceptedRows}">Accepted</dt>
+        <dd class="col-sm-9" th:text="${report.acceptedRows()}">0</dd>
+        <dt class="col-sm-3" th:text="#{md.importedRows}">Imported</dt>
+        <dd class="col-sm-9" th:text="${report.importedRows()}">0</dd>
+        <dt class="col-sm-3" th:text="#{md.failedRows}">Rejected</dt>
+        <dd class="col-sm-9" th:text="${report.failedRows()}">0</dd>
+        <dt class="col-sm-3" th:text="#{md.dryRun}">Dry run</dt>
+        <dd class="col-sm-9" th:text="${report.dryRun()} ? #{md.yes} : #{md.no}">true</dd>
+      </dl>
+    </div>
+
+    <div class="ub-card mb-3" th:if="${report.hasErrors()}">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="fs-6 mb-0" th:text="#{md.errors}">Rejected rows</h2>
+        <a class="btn btn-sm btn-outline-secondary" th:href="@{/master/import/errors.csv}"
+           th:text="#{md.downloadErrors}">Download error CSV</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col" th:text="#{md.row}">Row</th>
+              <th scope="col" th:text="#{md.code}">Code</th>
+              <th scope="col" th:text="#{md.field}">Field</th>
+              <th scope="col" th:text="#{md.message}">Message</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="e : ${report.errors()}">
+              <td th:text="${e.rowNumber()}">2</td>
+              <td class="font-monospace" th:text="${e.code()}">BRG-1</td>
+              <td th:text="${e.field()}">uom_code</td>
+              <td th:text="${e.message()}">Unknown UOM</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="ub-card mb-4" th:unless="${report.hasErrors()}">
+      <p class="mb-0 ub-muted" th:text="#{md.noErrors}">Every row passed validation.</p>
+    </div>
+
+    <a class="btn btn-outline-secondary" th:href="@{/master/products}" th:text="#{md.back}">Back</a>
+  </th:block>
+</body>
+</html>

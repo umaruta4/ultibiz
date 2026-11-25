@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{md.title}">Master Data</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <h1 class="fs-4 mb-3" th:text="${product != null} ? #{md.edit} : #{md.new}">Product</h1>
+
+    <form method="post" class="ub-card"
+          th:action="${product != null} ? @{/master/products/{id}(id=${product.id()})} : @{/master/products}">
+      <input type="hidden" th:if="${product != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <input type="hidden" th:if="${product != null}" name="rowVersion" th:value="${product.rowVersion()}">
+      <input type="hidden" th:if="${_csrf != null and product == null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+      <div class="row g-3">
+        <div class="col-12 col-md-4">
+          <label class="form-label" for="code" th:text="#{md.code}">Code</label>
+          <input class="form-control" id="code" name="code" required
+                 th:value="${product != null} ? ${product.code()} : ''" th:readonly="${product != null}">
+        </div>
+        <div class="col-12 col-md-8">
+          <label class="form-label" for="name" th:text="#{md.name}">Name</label>
+          <input class="form-control" id="name" name="name" required
+                 th:value="${product != null} ? ${product.name()} : ''">
+        </div>
+
+        <div class="col-12 col-md-4">
+          <label class="form-label" for="productType" th:text="#{md.productType}">Type</label>
+          <select class="form-select" id="productType" name="productType">
+            <option value="GOODS" th:selected="${product != null and product.productType() == 'GOODS'}" th:text="GOODS">GOODS</option>
+            <option value="SERVICE" th:selected="${product != null and product.productType() == 'SERVICE'}" th:text="SERVICE">SERVICE</option>
+            <option value="KIT" th:selected="${product != null and product.productType() == 'KIT'}" th:text="KIT">KIT</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label" for="uomCode" th:text="#{md.uom}">UoM</label>
+          <select class="form-select" id="uomCode" name="uomCode">
+            <option th:each="u : ${uoms}" th:value="${u}" th:text="${u}"
+                    th:selected="${product != null and product.uomCode() == u}">PCS</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label" for="siteId" th:text="#{md.site}">Site</label>
+          <select class="form-select" id="siteId" name="siteId">
+            <option value="" th:text="#{md.shared}">Shared by all sites</option>
+            <option th:each="s : ${sites}" th:value="${s.id()}" th:text="${s.code()} + ' — ' + ${s.name()}"
+                    th:selected="${product != null and product.siteId() != null and product.siteId() == s.id()}">SITE</option>
+          </select>
+        </div>
+
+        <div class="col-12 col-md-4">
+          <label class="form-label" for="barcode" th:text="#{md.barcode}">Barcode</label>
+          <input class="form-control" id="barcode" name="barcode"
+                 th:value="${product != null} ? ${product.barcode()} : ''">
+        </div>
+        <div class="col-6 col-md-4">
+          <label class="form-label" for="standardCost" th:text="#{md.standardCost}">Standard cost</label>
+          <input class="form-control" id="standardCost" name="standardCost" type="number" step="0.0001" min="0"
+                 th:value="${product != null} ? ${product.standardCost()} : '0'">
+        </div>
+        <div class="col-6 col-md-4">
+          <label class="form-label" for="currency" th:text="#{md.currency}">Currency</label>
+          <input class="form-control" id="currency" name="currency" maxlength="3"
+                 th:value="${product != null} ? ${product.currency()} : 'IDR'">
+        </div>
+
+        <div class="col-12 col-md-8">
+          <label class="form-label" for="description" th:text="#{md.description}">Description</label>
+          <textarea class="form-control" id="description" name="description" rows="2"
+                    th:text="${product != null} ? ${product.description()} : ''"></textarea>
+        </div>
+
+        <div class="col-12 d-flex flex-wrap gap-3">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="trackInventory" name="trackInventory" value="true"
+                   th:checked="${product == null or product.trackInventory()}">
+            <label class="form-check-label" for="trackInventory" th:text="#{md.trackInventory}">Track inventory</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="batchTracked" name="batchTracked" value="true"
+                   th:checked="${product != null and product.batchTracked()}">
+            <label class="form-check-label" for="batchTracked" th:text="#{md.batchTracked}">Batch tracked</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="serialTracked" name="serialTracked" value="true"
+                   th:checked="${product != null and product.serialTracked()}">
+            <label class="form-check-label" for="serialTracked" th:text="#{md.serialTracked}">Serial tracked</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="active" name="active" value="true"
+                   th:checked="${product == null or product.active()}">
+            <label class="form-check-label" for="active" th:text="#{md.active}">Active</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-4">
+        <button class="btn btn-primary" type="submit" th:text="#{md.save}">Save</button>
+        <a class="btn btn-outline-secondary" th:href="@{/master/products}" th:text="#{md.cancel}">Cancel</a>
+      </div>
+    </form>
+  </th:block>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{md.title}">Master Data</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <h1 class="fs-4 mb-3" th:text="#{md.productionLines}">Production lines</h1>
+
+    <form class="row g-2 mb-3" method="get" th:action="@{/master/production-lines}">
+      <div class="col-12 col-md-6">
+        <input class="form-control" type="search" name="search" th:value="${search}"
+               th:placeholder="#{md.searchPlaceholder}" placeholder="Search code or name">
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" name="activeOnly" value="true" id="activeOnly"
+                 th:checked="${activeOnly}">
+          <label class="form-check-label small" for="activeOnly" th:text="#{md.activeOnly}">Active only</label>
+        </div>
+      </div>
+      <div class="col-6 col-md-3 d-grid align-self-end">
+        <button class="btn btn-outline-primary" type="submit" th:text="#{md.filter}">Filter</button>
+      </div>
+    </form>
+
+    <div class="ub-card mb-3">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col" th:text="#{md.code}">Code</th>
+              <th scope="col" th:text="#{md.name}">Name</th>
+              <th scope="col" th:text="#{md.warehouse}">Warehouse</th>
+              <th scope="col" th:text="#{md.workCenter}">Work center</th>
+              <th scope="col" class="text-end" th:text="#{md.capacityPerDay}">Capacity / day</th>
+              <th scope="col" th:text="#{md.status}">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="l : ${lines.items()}">
+              <td class="font-monospace" th:text="${l.code()}">PL-1</td>
+              <td th:text="${l.name()}">Assembly line</td>
+              <td th:text="${l.warehouseId()} ?: '-'">1</td>
+              <td th:text="${l.workCenterId()} ?: '-'">2</td>
+              <td class="text-end" th:text="${l.capacityPerDay()}">0.0000</td>
+              <td>
+                <span class="badge text-bg-success" th:if="${l.active()}" th:text="#{md.active}">Active</span>
+                <span class="badge text-bg-secondary" th:unless="${l.active()}" th:text="#{md.inactive}">Inactive</span>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(lines.items())}">
+              <td colspan="6" class="ub-muted text-center" th:text="#{md.noData}">No production lines found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <h2 class="fs-6 mb-2" th:text="#{md.workCenters}">Work centers</h2>
+    <div class="ub-card mb-4">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col" th:text="#{md.code}">Code</th>
+              <th scope="col" th:text="#{md.name}">Name</th>
+              <th scope="col" th:text="#{md.type}">Type</th>
+              <th scope="col" class="text-end" th:text="#{md.capacityHours}">Hours / day</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="w : ${workCenters}">
+              <td class="font-monospace" th:text="${w.code()}">WC-1</td>
+              <td th:text="${w.name()}">CNC Machine 1</td>
+              <td th:text="${w.workCenterType()}">MACHINE</td>
+              <td class="text-end" th:text="${w.capacityHoursPerDay()}">8.00</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(workCenters)}">
+              <td colspan="4" class="ub-muted text-center" th:text="#{md.noData}">No work centers found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center">
+      <span class="ub-muted small"
+            th:text="#{md.pageOf} + ' ' + ${lines.page + 1} + ' / ' + ${lines.pageCount()} + ' (' + ${lines.total()} + ' ' + #{md.rows} + ')'">
+        page 1 / 1</span>
+      <div class="btn-group">
+        <a class="btn btn-sm btn-outline-secondary" th:disabled="${!lines.hasPrevious()}"
+           th:href="@{/master/production-lines(search=${search},activeOnly=${activeOnly},page=${lines.page - 1},size=${size})}"
+           th:text="#{md.previous}">Previous</a>
+        <a class="btn btn-sm btn-outline-secondary" th:disabled="${!lines.hasNext()}"
+           th:href="@{/master/production-lines(search=${search},activeOnly=${activeOnly},page=${lines.page + 1},size=${size})}"
+           th:text="#{md.next}">Next</a>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>

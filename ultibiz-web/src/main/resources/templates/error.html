@@ -12,6 +12,7 @@
   <main class="text-center px-3" style="max-width: 480px;">
     <div class="ub-brand fs-1" th:text="${status} ?: '500'">500</div>
     <h1 class="fs-4 mt-2" th:text="#{error.title}">Something went wrong</h1>
+    <p class="ub-muted" th:if="${message != null}" th:text="${message}">Detail message</p>
     <p class="ub-muted" th:text="#{error.contact}">Please contact your administrator if the problem persists.</p>
     <a class="btn btn-primary" th:href="@{/}" href="/" th:text="#{error.backHome}">Back to dashboard</a>
   </main>

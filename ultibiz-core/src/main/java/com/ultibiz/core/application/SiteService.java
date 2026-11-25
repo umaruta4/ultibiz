@@ -1,6 +1,8 @@
 package com.ultibiz.core.application;
 
+import com.ultibiz.core.domain.Site;
 import com.ultibiz.core.infrastructure.SiteRepository;
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 /**
@@ -20,5 +22,13 @@ public class SiteService {
             return 0;
         }
         return sites.countInScope(scope);
+    }
+
+    /** Sites the caller may use as an owner of master data. */
+    public List<Site> listVisibleTo(SiteScope scope) {
+        if (scope.isDenyAll()) {
+            return List.of();
+        }
+        return sites.listVisible(scope);
     }
 }

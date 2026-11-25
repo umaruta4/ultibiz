@@ -47,7 +47,21 @@
     <nav class="ub-sidebar" aria-label="Primary">
       <ul class="nav flex-column">
         <li class="nav-item"><a class="nav-link active" th:href="@{/}" href="/" aria-current="page" th:text="#{nav.dashboard}">Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.masterData}">Master Data</a></li>
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/master/products}" href="/master/products" th:text="#{nav.masterData}">Master Data</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link ps-3 py-1 small" th:href="@{/master/products}" th:text="#{nav.masterDataProducts}">Products</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link ps-3 py-1 small" th:href="@{/master/parties}" th:text="#{nav.masterDataParties}">Parties</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link ps-3 py-1 small" th:href="@{/master/warehouses}" th:text="#{nav.masterDataWarehouses}">Warehouses</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link ps-3 py-1 small" th:href="@{/master/production-lines}" th:text="#{nav.masterDataProductionLines}">Production lines</a>
+        </li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.accounting}">Accounting</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.sales}">Sales</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.orders}">Orders</a></li>
@@ -63,6 +77,7 @@
     </nav>
 
     <main id="main-content" class="ub-content">
+      <div class="alert alert-success py-2" role="status" th:if="${flash != null}" th:text="#{${flash}}">Saved</div>
       <th:block th:replace="${content}"></th:block>
     </main>
   </div>
