@@ -10,6 +10,7 @@
   <script th:src="@{/js/theme.js}" src="/js/theme.js"></script>
   <link rel="stylesheet" th:href="@{/vendor/bootstrap/css/bootstrap.min.css}" href="/vendor/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css">
+  <link rel="manifest" th:href="@{/manifest.webmanifest}" href="/manifest.webmanifest">
 </head>
 <body>
   <a class="ub-skip-link" href="#main-content" th:text="#{common.skipToContent}">Skip to content</a>
@@ -137,6 +138,17 @@
             <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/exchange/mapping}" th:text="#{exchange.mapping}">Mapping console</a></li>
           </ul>
         </li>
+        <li class="nav-item ub-nav-group">
+          <button class="nav-link ub-nav-toggle" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#nav-sync" aria-expanded="false" aria-controls="nav-sync">
+            <span th:text="#{nav.sync}">Sync</span>
+            <span class="ub-chevron" aria-hidden="true">&#9656;</span>
+          </button>
+          <ul class="nav flex-column collapse" id="nav-sync">
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/sync}" th:text="#{sync.title}">Offline &amp; sync</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/sync/conflicts}" th:text="#{sync.conflictCenter}">Conflict center</a></li>
+          </ul>
+        </li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.hrm}">HRM</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.projects}">Projects</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.crm}">CRM</a></li>
@@ -148,6 +160,8 @@
 
     <main id="main-content" class="ub-content">
       <div class="alert alert-success py-2" role="status" th:if="${flash != null}" th:text="#{${flash}}">Saved</div>
+      <div class="alert alert-warning py-2" role="status" data-offline-banner hidden
+           th:text="#{sync.offlineBanner}">You are offline. Changes are stored locally and synced later.</div>
       <th:block th:replace="${content}"></th:block>
     </main>
   </div>
@@ -161,5 +175,6 @@
   <script th:src="@{/vendor/bootstrap/js/bootstrap.bundle.min.js}" src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script th:src="@{/vendor/htmx/htmx.min.js}" src="/vendor/htmx/htmx.min.js"></script>
   <script th:src="@{/js/app.js}" src="/js/app.js"></script>
+  <script th:src="@{/js/sync.js}" src="/js/sync.js"></script>
 </body>
 </html>

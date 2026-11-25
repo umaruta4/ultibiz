@@ -108,3 +108,15 @@
     }
   }
 })();
+
+// --- service worker -------------------------------------------------------
+// The offline shell is registered after the load, so it never delays the page.
+(function () {
+  'use strict';
+  if (!('serviceWorker' in navigator)) { return; }
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js').catch(function () {
+      // no offline shell, the app still works online
+    });
+  });
+})();

@@ -43,6 +43,33 @@ Node/npm/bundler). Runs at root context (`/`).
 
 Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 
+## What P6 delivers
+
+- **Offline-first client** (`static/js/sync.js`): a dependency-free IndexedDB
+  wrapper with three stores (outbox, snapshots, meta), the offline banner, the
+  status bar (pending / failed with the operator-readable reason) and the
+  policy that refuses the online-only forms while offline.
+- **Service worker and PWA**: `static/sw.js` precaches the app shell and the
+  vendored assets in a versioned cache (stale while revalidate, the cached
+  shell as the navigation fallback), plus `manifest.webmanifest` and the
+  installable icons.
+- **Server side**: `ub_change_log` (a monotonic sequence per organisation),
+  `ub_idempotency` (every pushed operation is applied exactly once),
+  `ub_sync_entity` (the documents that may be created offline), `ub_sync_queue`
+  (the retry queue) and `ub_sync_conflict` (the conflicts).
+- **Sync API**: `POST /api/sync/push`, `GET /api/sync/changes?since=`,
+  `GET /api/sync/pull?cursor=` and `GET /api/sync/status`; every pushed
+  operation gets its own answer — APPLIED, CONFLICT, REJECTED or DUPLICATE.
+- **Conflict policy**: last writer wins for the low-risk fields, a field-level
+  merge for disjoint edits, and the server wins plus an operator decision for
+  the numeric, financial and status fields — a numeric field is never silently
+  overwritten, so an update can not be lost.
+- **Conflict centre** (`/sync/conflicts`): the field diff with keep mine,
+  keep theirs and merge.
+- **Offline policy**: accounting postings, stock transfers, invoices, bills and
+  receipts are online-only and are refused with a clear reason; drafts,
+  notes, timesheets, attendance, stock counts and tickets work offline.
+
 ## What P5 delivers
 
 - **Canonical document model (BDM)** — one Java model (`CanonicalDocument`)
