@@ -11,7 +11,8 @@ Node/npm/bundler). Runs at root context (`/`).
 |---|---|---|
 | **P0** | Foundation: Maven multi-module, schema baseline, security/login, DB-backed sessions, web shell, dark mode, audit, health probes, Flyway, deploy tooling | **done** |
 | **P1** | Master data + multi-site (product, party, warehouse/rack/bin/dock, production line, work center), numbering engine, country/tax SPI, CSV import/export, master-data screens | **done** |
-| **P2** | Accounting: chart of accounts, fiscal periods, double-entry posting engine, reversals, tax packs (ID PPN + EU VAT), multi-currency, trial balance, accounting screens | **done** (core) |
+| **P2** | Accounting: chart of accounts, fiscal periods, double-entry posting engine, reversals, tax packs (ID PPN + EU VAT), multi-currency, trial balance, accounting screens | **done** |
+| **P2b** | AR/AP: invoices, bills, receipts, payments, allocations, ageing, three-way match, bank statement import + reconciliation | **done** |
 | **P3** | Sales & purchase orders, goods receipts, stock (moving average), BOM + work orders, order/inventory/manufacturing screens | **done** (core) |
 | P4 | Asset management + HRM | planned |
 | P5 | Projects + CRM + sales pipeline | planned |
@@ -19,6 +20,28 @@ Node/npm/bundler). Runs at root context (`/`).
 | P7 | Data exchange: EDI, Peppol UBL, REST/JSON | planned |
 | P8 | Offline sync, admin console, upgrades | planned |
 | P9 | AI assistant, Kubernetes hardening, performance | planned |
+
+## What P2b delivers
+
+- **Customer invoices**: issued from a shipped sales order; they post a real
+  journal (debit receivables, credit revenue, credit tax payable) and the
+  invoice keeps the journal reference.
+- **Supplier bills**: issued from a received purchase order; the journal books
+  the inventory/expense against the payable.
+- **Receipts and payments**: money in and money out, each with its own journal;
+  the amount is allocated to a chosen invoice/bill first and to the oldest open
+  ones afterwards. The document status follows: `OPEN` → `PARTIAL` → `PAID`.
+- **Ageing**: receivables and payables with days overdue and the total
+  outstanding.
+- **Three-way match**: bill against purchase order and goods receipt, with a
+  configurable tolerance (percent and absolute amount, per organization).
+- **Bank and cash**: bank/cash accounts linked to a ledger account, statement
+  import from CSV and a reconciliation that matches statement lines against the
+  receipts and payments by amount and date.
+- **Screens**: `/accounting/ar`, `/accounting/ar/aging`, `/accounting/ap`,
+  `/accounting/ap/aging`, `/accounting/ap/{id}/match`, `/accounting/bank`.
+
+Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 
 ## What P3 delivers
 

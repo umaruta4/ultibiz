@@ -77,6 +77,15 @@
         <li class="nav-item">
           <a class="nav-link ps-3 py-1 small" th:href="@{/accounting/trial-balance}" th:text="#{acct.trialBalance}">Trial balance</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link ps-3 py-1 small" th:href="@{/accounting/ar}" th:text="#{ar.invoices}">Invoices</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link ps-3 py-1 small" th:href="@{/accounting/ap}" th:text="#{ap.bills}">Supplier bills</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link ps-3 py-1 small" th:href="@{/accounting/bank}" th:text="#{bank.accounts}">Bank</a>
+        </li>
         <li class="nav-item"><a class="nav-link" th:href="@{/orders/sales}" th:text="#{nav.sales}">Sales</a></li>
         <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/orders/sales}" th:text="#{om.salesOrders}">Sales orders</a></li>
         <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/orders/purchase}" th:text="#{om.purchaseOrders}">Purchase orders</a></li>

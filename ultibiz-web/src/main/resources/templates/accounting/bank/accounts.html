@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{acct.title}">Accounting</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <h1 class="fs-4 mb-3" th:text="#{bank.accounts}">Bank and cash accounts</h1>
+    <div class="ub-card">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr>
+            <th scope="col" th:text="#{md.code}">Code</th>
+            <th scope="col" th:text="#{md.name}">Name</th>
+            <th scope="col" th:text="#{bank.bankName}">Bank</th>
+            <th scope="col" th:text="#{bank.accountNumber}">Account number</th>
+            <th scope="col" th:text="#{md.currency}">Currency</th>
+          </tr></thead>
+          <tbody>
+            <tr th:each="a : ${accounts}">
+              <td><a class="font-monospace" th:href="@{/accounting/bank/{id}(id=${a.id()})}" th:text="${a.code()}">BANK-1</a></td>
+              <td th:text="${a.name()}">-</td>
+              <td th:text="${a.bankName()} ?: '-'">-</td>
+              <td th:text="${a.accountNumber()} ?: '-'">-</td>
+              <td th:text="${a.currency()}">IDR</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(accounts)}"><td colspan="5" class="ub-muted text-center" th:text="#{md.noData}">No accounts.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{acct.title}">Accounting</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{ar.aging}">Receivables ageing</h1>
+      <a class="btn btn-sm btn-outline-secondary" th:href="@{/accounting/ar}" th:text="#{md.back}">Back</a>
+    </div>
+    <div class="ub-card mb-3">
+      <dl class="row mb-0">
+        <dt class="col-sm-3" th:text="#{ar.totalOutstanding}">Total outstanding</dt>
+        <dd class="col-sm-9 fw-semibold" th:text="${report.totalOutstanding()}">0.00</dd>
+      </dl>
+    </div>
+    <div class="ub-card">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr>
+            <th scope="col" th:text="#{acct.number}">Invoice</th>
+            <th scope="col" class="text-end" th:text="#{ar.total}">Total</th>
+            <th scope="col" class="text-end" th:text="#{ar.paid}">Paid</th>
+            <th scope="col" class="text-end" th:text="#{ar.outstanding}">Outstanding</th>
+            <th scope="col" class="text-end" th:text="#{ar.daysOverdue}">Days overdue</th>
+          </tr></thead>
+          <tbody>
+            <tr th:each="r : ${report.rows()}">
+              <td class="font-monospace" th:text="${r.invoiceNumber()}">INV-1</td>
+              <td class="text-end" th:text="${r.total()}">0.00</td>
+              <td class="text-end" th:text="${r.paid()}">0.00</td>
+              <td class="text-end" th:text="${r.outstanding()}">0.00</td>
+              <td class="text-end" th:text="${r.daysOverdue()}">0</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(report.rows())}"><td colspan="5" class="ub-muted text-center" th:text="#{md.noData}">No open invoices.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>

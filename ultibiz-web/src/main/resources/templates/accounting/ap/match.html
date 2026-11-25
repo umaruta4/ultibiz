@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{acct.title}">Accounting</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{ap.match}">Three-way match</h1>
+      <a class="btn btn-sm btn-outline-secondary" th:href="@{/accounting/ap/{id}(id=${billId})}" th:text="#{md.back}">Back</a>
+    </div>
+    <div class="ub-card mb-3">
+      <dl class="row mb-0">
+        <dt class="col-sm-3" th:text="#{ap.result}">Result</dt>
+        <dd class="col-sm-9">
+          <span class="badge text-bg-success" th:if="${result.matched()}" th:text="#{ap.matched}">Matched</span>
+          <span class="badge text-bg-danger" th:unless="${result.matched()}" th:text="#{ap.mismatch}">Mismatch</span>
+        </dd>
+        <dt class="col-sm-3" th:text="#{ap.tolerance}">Tolerance</dt>
+        <dd class="col-sm-9" th:text="${result.toleranceApplied()}">0.00</dd>
+      </dl>
+    </div>
+    <div class="ub-card" th:if="${!result.matched()}">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr>
+            <th scope="col" th:text="#{ap.line}">Line</th>
+            <th scope="col" class="text-end" th:text="#{ap.billed}">Billed</th>
+            <th scope="col" class="text-end" th:text="#{ap.received}">Received</th>
+            <th scope="col" class="text-end" th:text="#{ap.variance}">Variance</th>
+          </tr></thead>
+          <tbody>
+            <tr th:each="v : ${result.variances()}">
+              <td th:text="${v.lineNo()}">1</td>
+              <td class="text-end" th:text="${v.billed()}">0</td>
+              <td class="text-end" th:text="${v.received()}">0</td>
+              <td class="text-end text-danger" th:text="${v.variance()}">0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>

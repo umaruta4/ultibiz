@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{acct.title}">Accounting</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{ap.bills}">Supplier bills</h1>
+      <a class="btn btn-sm btn-outline-primary" th:href="@{/accounting/ap/aging}" th:text="#{ap.aging}">Ageing</a>
+    </div>
+    <form class="row g-2 mb-3" method="get" th:action="@{/accounting/ap}">
+      <div class="col-8 col-md-3">
+        <select class="form-select" name="status">
+          <option value="" th:text="#{md.all}">All</option>
+          <option value="OPEN" th:selected="${status == 'OPEN'}" th:text="OPEN">OPEN</option>
+          <option value="PARTIAL" th:selected="${status == 'PARTIAL'}" th:text="PARTIAL">PARTIAL</option>
+          <option value="PAID" th:selected="${status == 'PAID'}" th:text="PAID">PAID</option>
+        </select>
+      </div>
+      <div class="col-4 col-md-2 d-grid"><button class="btn btn-outline-primary" type="submit" th:text="#{md.filter}">Filter</button></div>
+    </form>
+    <div class="ub-card">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr>
+            <th scope="col" th:text="#{acct.number}">Number</th>
+            <th scope="col" th:text="#{acct.date}">Date</th>
+            <th scope="col" th:text="#{ar.dueDate}">Due</th>
+            <th scope="col" class="text-end" th:text="#{ar.total}">Total</th>
+            <th scope="col" class="text-end" th:text="#{ar.paid}">Paid</th>
+            <th scope="col" class="text-end" th:text="#{ar.outstanding}">Outstanding</th>
+            <th scope="col" th:text="#{acct.status}">Status</th>
+          </tr></thead>
+          <tbody>
+            <tr th:each="b : ${bills.items()}">
+              <td><a class="font-monospace" th:href="@{/accounting/ap/{id}(id=${b.id()})}" th:text="${b.billNumber()}">BILL-1</a></td>
+              <td th:text="${b.billDate()}">-</td>
+              <td th:text="${b.dueDate()}">-</td>
+              <td class="text-end" th:text="${b.total()}">0.00</td>
+              <td class="text-end" th:text="${b.paidAmount()}">0.00</td>
+              <td class="text-end" th:text="${b.outstanding()}">0.00</td>
+              <td><span class="badge text-bg-primary" th:text="${b.status()}">OPEN</span></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(bills.items())}"><td colspan="7" class="ub-muted text-center" th:text="#{md.noData}">No bills.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>

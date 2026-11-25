@@ -175,6 +175,13 @@ public class SalesOrderService {
         return orders.findById(scope.organizationId(), orderId);
     }
 
+    /** Status change used by the AR flow (SHIPPED -> INVOICED). */
+    public void updateStatus(SiteScope scope, String actor, long orderId, String status) {
+        orders.updateStatus(orderId, status);
+        audit.record(AuditEvent.of(scope.organizationId(), actor, "SALES_ORDER_" + status, "sales_order",
+                String.valueOf(orderId), null, null));
+    }
+
     public PageResult<SalesOrder> search(SiteScope scope, String status, int page, int size) {
         int safeSize = Math.max(1, Math.min(size, 200));
         int safePage = Math.max(0, page);

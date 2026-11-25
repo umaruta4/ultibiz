@@ -1,5 +1,7 @@
 package com.ultibiz.web.web;
 
+import com.ultibiz.core.application.ArService;
+import com.ultibiz.core.application.ApService;
 import com.ultibiz.core.application.OrderException;
 import com.ultibiz.core.application.PageResult;
 import com.ultibiz.core.application.PartyService;
@@ -13,6 +15,8 @@ import com.ultibiz.core.application.SiteScope;
 import com.ultibiz.core.application.WarehouseService;
 import com.ultibiz.core.application.ProductService;
 import com.ultibiz.core.domain.Party;
+import com.ultibiz.core.domain.ArInvoice;
+import com.ultibiz.core.domain.ApBill;
 import com.ultibiz.core.domain.Product;
 import com.ultibiz.core.domain.PurchaseOrder;
 import com.ultibiz.core.domain.PurchaseOrderLine;
@@ -53,17 +57,21 @@ public class OrdersController {
     private final PurchaseOrderService purchaseOrders;
     private final PartyService parties;
     private final ProductService products;
+    private final ArService ar;
+    private final ApService ap;
     private final WarehouseService warehouses;
     private final SiteScopeProvider scopeProvider;
 
     public OrdersController(SalesOrderService salesOrders, PurchaseOrderService purchaseOrders,
                             PartyService parties, ProductService products, WarehouseService warehouses,
-                            SiteScopeProvider scopeProvider) {
+                            ArService ar, ApService ap, SiteScopeProvider scopeProvider) {
         this.salesOrders = salesOrders;
         this.purchaseOrders = purchaseOrders;
         this.parties = parties;
         this.products = products;
         this.warehouses = warehouses;
+        this.ar = ar;
+        this.ap = ap;
         this.scopeProvider = scopeProvider;
     }
 
@@ -160,6 +168,35 @@ public class OrdersController {
         return "redirect:/orders/sales/" + id;
     }
 
+    /** Issues the customer invoice for a delivered order. */
+    @PostMapping("/sales/{id}/invoice")
+    public String invoiceSales(@PathVariable long id, @AuthenticationPrincipal UltiBizUserPrincipal principal,
+                               RedirectAttributes redirect) {
+        SiteScope scope = scopeProvider.current();
+        SalesOrder order = salesOrders.byId(scope, id);
+        try {
+            if (order == null) {
+                throw new OrderException("Order not found: " + id);
+            }
+            if (!"SHIPPED".equals(order.status()) && !"PARTIALLY_SHIPPED".equals(order.status())) {
+                throw new OrderException("Only a shipped order can be invoiced (status: " + order.status() + ")");
+            }
+            List<SalesOrderLineDraft> lines = new ArrayList<>();
+            for (SalesOrderLine line : salesOrders.lines(scope, id)) {
+                lines.add(new SalesOrderLineDraft(line.productId(), line.description(), line.quantity(),
+                        line.unitPrice(), line.discount(), line.taxCategoryId()));
+            }
+            ArInvoice invoice = ar.issueInvoice(scope, actor(principal), order.countryCode(), order.partyId(),
+                    order.id(), order.orderDate(), order.orderDate().plusDays(30), order.currency(),
+                    order.exchangeRate(), false, lines);
+            salesOrders.updateStatus(scope, actor(principal), order.id(), "INVOICED");
+            return "redirect:/accounting/ar/" + invoice.id();
+        } catch (OrderException ex) {
+            redirect.addFlashAttribute("error", ex.getMessage());
+            return "redirect:/orders/sales/" + id;
+        }
+    }
+
     // ------------------------------------------------------------ purchase
 
     @GetMapping("/purchase")
@@ -251,6 +288,33 @@ public class OrdersController {
             redirect.addFlashAttribute("error", ex.getMessage());
         }
         return "redirect:/orders/purchase/" + id;
+    }
+
+    /** Issues the supplier bill for a received order. */
+    @PostMapping("/purchase/{id}/bill")
+    public String billPurchase(@PathVariable long id, @AuthenticationPrincipal UltiBizUserPrincipal principal,
+                               RedirectAttributes redirect) {
+        SiteScope scope = scopeProvider.current();
+        PurchaseOrder order = purchaseOrders.byId(scope, id);
+        try {
+            if (order == null) {
+                throw new OrderException("Order not found: " + id);
+            }
+            if (!"RECEIVED".equals(order.status()) && !"PARTIALLY_RECEIVED".equals(order.status())) {
+                throw new OrderException("Only a received order can be billed (status: " + order.status() + ")");
+            }
+            List<PurchaseOrderLineDraft> lines = new ArrayList<>();
+            for (PurchaseOrderLine line : purchaseOrders.lines(scope, id)) {
+                lines.add(new PurchaseOrderLineDraft(line.productId(), line.description(), line.quantity(),
+                        line.unitPrice(), line.taxCategoryId()));
+            }
+            ApBill bill = ap.issueBill(scope, actor(principal), order.countryCode(), order.partyId(),
+                    order.id(), order.orderDate(), order.orderDate().plusDays(30), order.currency(), lines);
+            return "redirect:/accounting/ap/" + bill.id();
+        } catch (OrderException ex) {
+            redirect.addFlashAttribute("error", ex.getMessage());
+            return "redirect:/orders/purchase/" + id;
+        }
     }
 
     // ------------------------------------------------------------- helpers
