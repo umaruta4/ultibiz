@@ -124,6 +124,19 @@
             <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/assets/maintenance}" th:text="#{asset.maintenance}">Maintenance</a></li>
           </ul>
         </li>
+        <li class="nav-item ub-nav-group">
+          <button class="nav-link ub-nav-toggle" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#nav-exchange" aria-expanded="false" aria-controls="nav-exchange">
+            <span th:text="#{nav.exchange}">Data exchange</span>
+            <span class="ub-chevron" aria-hidden="true">&#9656;</span>
+          </button>
+          <ul class="nav flex-column collapse" id="nav-exchange">
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/exchange}" th:text="#{exchange.title}">Data exchange</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/exchange/messages}" th:text="#{exchange.messages}">Messages</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/exchange/partners}" th:text="#{exchange.partners}">Partners</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/exchange/mapping}" th:text="#{exchange.mapping}">Mapping console</a></li>
+          </ul>
+        </li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.hrm}">HRM</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.projects}">Projects</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.crm}">CRM</a></li>

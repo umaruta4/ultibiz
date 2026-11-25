@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{exchange.title}">Data exchange</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{exchange.partners}">Partners</h1>
+      <a class="btn btn-sm btn-outline-secondary" th:href="@{/exchange}" th:text="#{exchange.title}">Data exchange</a>
+    </div>
+
+    <div class="ub-card mb-3">
+      <h2 class="fs-6" th:text="#{exchange.newPartner}">New partner</h2>
+      <form method="post" th:action="@{/exchange/partners}" class="row g-2">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <div class="col-6 col-md-2"><input class="form-control form-control-sm" type="text" name="code" placeholder="code" required></div>
+        <div class="col-6 col-md-3"><input class="form-control form-control-sm" type="text" name="name" placeholder="name" required></div>
+        <div class="col-6 col-md-2">
+          <select class="form-select form-select-sm" name="protocol">
+            <option th:each="p : ${ {'REST_JSON','PEPPOL','X12','EDIFACT','CSV'} }" th:value="${p}" th:text="${p}">REST_JSON</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-2">
+          <select class="form-select form-select-sm" name="direction">
+            <option th:each="d : ${ {'INBOUND','OUTBOUND','BOTH'} }" th:value="${d}" th:text="${d}">BOTH</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-3"><input class="form-control form-control-sm" type="text" name="endpointUrl" placeholder="endpoint"></div>
+        <div class="col-12 col-md-6"><input class="form-control form-control-sm" type="text" name="peppolParticipantId" placeholder="0192:123456789"></div>
+        <div class="col-12 col-md-6">
+          <button class="btn btn-sm btn-primary" type="submit" th:text="#{om.create}">Create</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="ub-card">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr>
+            <th scope="col" th:text="#{exchange.code}">Code</th>
+            <th scope="col" th:text="#{exchange.name}">Name</th>
+            <th scope="col" th:text="#{exchange.protocol}">Protocol</th>
+            <th scope="col" th:text="#{exchange.direction}">Direction</th>
+            <th scope="col" th:text="#{exchange.endpoint}">Endpoint</th>
+            <th scope="col" th:text="#{exchange.participant}">Participant</th>
+          </tr></thead>
+          <tbody>
+            <tr th:each="p : ${partners}">
+              <td class="font-monospace" th:text="${p.code()}">SIM</td>
+              <td th:text="${p.name()}">-</td>
+              <td th:text="${p.protocol()}">REST_JSON</td>
+              <td th:text="${p.direction()}">BOTH</td>
+              <td class="ub-muted small" th:text="${p.endpointUrl()} ?: '-'">-</td>
+              <td class="ub-muted small" th:text="${p.peppolParticipantId()} ?: '-'">-</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>

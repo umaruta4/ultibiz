@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{exchange.title}">Data exchange</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{exchange.title}">Data exchange</h1>
+      <div class="d-flex gap-2">
+        <a class="btn btn-sm btn-outline-secondary" th:href="@{/exchange/messages}" th:text="#{exchange.messages}">Messages</a>
+        <a class="btn btn-sm btn-outline-secondary" th:href="@{/exchange/partners}" th:text="#{exchange.partners}">Partners</a>
+        <a class="btn btn-sm btn-outline-secondary" th:href="@{/exchange/mapping}" th:text="#{exchange.mapping}">Mapping console</a>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-md-3" th:each="c : ${counts}">
+        <div class="ub-card">
+          <div class="ub-muted small" th:text="${c.status()}">RECEIVED</div>
+          <div class="fs-4 fw-semibold" th:text="${c.count()}">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ub-card">
+      <h2 class="fs-6" th:text="#{exchange.recent}">Recent messages</h2>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr>
+            <th scope="col" th:text="#{exchange.direction}">Direction</th>
+            <th scope="col" th:text="#{exchange.protocol}">Protocol</th>
+            <th scope="col" th:text="#{exchange.documentType}">Document</th>
+            <th scope="col" th:text="#{exchange.status}">Status</th>
+            <th scope="col" th:text="#{exchange.attempts}">Attempts</th>
+          </tr></thead>
+          <tbody>
+            <tr th:each="m : ${messages}">
+              <td><a th:href="@{/exchange/messages/{id}(id=${m.id()})}" th:text="${m.direction()}">INBOUND</a></td>
+              <td th:text="${m.protocol()}">REST_JSON</td>
+              <td th:text="${m.documentNumber()} ?: ${m.documentType()}">-</td>
+              <td><span class="badge text-bg-secondary" th:text="${m.status()}">RECEIVED</span></td>
+              <td th:text="${m.attempts()}">0</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(messages)}"><td colspan="5" class="ub-muted text-center" th:text="#{md.noData}">No messages.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>

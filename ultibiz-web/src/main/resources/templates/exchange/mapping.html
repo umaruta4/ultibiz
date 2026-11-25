@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{exchange.title}">Data exchange</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{exchange.mapping}">Mapping console</h1>
+      <a class="btn btn-sm btn-outline-secondary" th:href="@{/exchange}" th:text="#{exchange.title}">Data exchange</a>
+    </div>
+
+    <form method="post" th:action="@{/exchange/mapping/test}" class="ub-card mb-3">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <div class="row g-2 mb-2">
+        <div class="col-12 col-md-4">
+          <label class="form-label" for="partnerCode" th:text="#{exchange.partner}">Partner</label>
+          <select class="form-select form-select-sm" id="partnerCode" name="partnerCode" required>
+            <option value="" th:text="#{exchange.pickPartner}">- pick -</option>
+            <option th:each="p : ${partners}" th:value="${p.code()}" th:text="${p.code()} + ' (' + ${p.protocol()} + ')'"
+                    th:selected="${p.code() == partnerCode}">SIM</option>
+          </select>
+        </div>
+      </div>
+      <label class="form-label" for="payload" th:text="#{exchange.payload}">Payload</label>
+      <textarea class="form-control font-monospace" rows="12" id="payload" name="payload"
+                th:text="${payload}">{}</textarea>
+      <div class="mt-2">
+        <button class="btn btn-sm btn-primary" type="submit" th:text="#{exchange.testRun}">Test run</button>
+      </div>
+    </form>
+
+    <div class="ub-card" th:if="${result != null}">
+      <h2 class="fs-6" th:text="#{exchange.result}">Result</h2>
+      <div class="alert alert-danger py-2" th:if="${result.error != null}" th:text="${result.error}">Error</div>
+      <div th:if="${result.ok}">
+        <dl class="row small mb-2">
+          <dt class="col-3" th:text="#{exchange.documentType}">Document</dt>
+          <dd class="col-9" th:text="${result.document.type()} + ' ' + ${result.document.documentNumber()}">-</dd>
+          <dt class="col-3" th:text="#{exchange.lines}">Lines</dt>
+          <dd class="col-9" th:text="${#lists.size(result.document.lines())}">0</dd>
+          <dt class="col-3" th:text="#{exchange.total}">Total</dt>
+          <dd class="col-9" th:text="${result.document.grossTotal()} + ' ' + ${result.document.currency()}">0</dd>
+        </dl>
+        <h3 class="fs-6" th:text="#{exchange.issues}">Issues</h3>
+        <ul class="small mb-0">
+          <li th:each="i : ${result.issues}" th:text="'[' + ${i.severity()} + '] ' + ${i.ruleId()} + ' - ' + ${i.message()}">issue</li>
+          <li th:if="${#lists.isEmpty(result.issues)}" class="ub-muted" th:text="#{exchange.noIssues}">No issues.</li>
+        </ul>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>

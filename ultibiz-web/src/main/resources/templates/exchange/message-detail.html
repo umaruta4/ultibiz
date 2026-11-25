@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{exchange.title}">Data exchange</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{exchange.message} + ' ' + ${message.id()}">Message 1</h1>
+      <div class="d-flex gap-2">
+        <form method="post" th:if="${message.status() == 'DEAD' or message.status() == 'REJECTED' or message.status() == 'FAILED'}"
+              th:action="@{/exchange/messages/{id}/replay(id=${message.id()})}">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          <button class="btn btn-sm btn-outline-primary" type="submit" th:text="#{exchange.replay}">Replay</button>
+        </form>
+        <a class="btn btn-sm btn-outline-secondary" th:href="@{/exchange/messages}" th:text="#{md.back}">Back</a>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-lg-4">
+        <div class="ub-card">
+          <h2 class="fs-6" th:text="#{exchange.details}">Details</h2>
+          <dl class="row mb-0 small">
+            <dt class="col-5" th:text="#{exchange.direction}">Direction</dt><dd class="col-7" th:text="${message.direction()}">-</dd>
+            <dt class="col-5" th:text="#{exchange.protocol}">Protocol</dt><dd class="col-7" th:text="${message.protocol()}">-</dd>
+            <dt class="col-5" th:text="#{exchange.status}">Status</dt><dd class="col-7" th:text="${message.status()}">-</dd>
+            <dt class="col-5" th:text="#{exchange.documentType}">Document</dt><dd class="col-7" th:text="${message.documentNumber()} ?: ${message.documentType()}">-</dd>
+            <dt class="col-5" th:text="#{exchange.idempotencyKey}">Idempotency key</dt><dd class="col-7 font-monospace" th:text="${message.idempotencyKey()}">-</dd>
+            <dt class="col-5" th:text="#{exchange.attempts}">Attempts</dt><dd class="col-7" th:text="${message.attempts()} + ' / ' + ${message.maxAttempts()}">0</dd>
+            <dt class="col-5" th:text="#{exchange.applied}">Applied</dt><dd class="col-7" th:text="${message.appliedDocumentType()} ?: '-'">-</dd>
+          </dl>
+        </div>
+      </div>
+      <div class="col-12 col-lg-8">
+        <div class="ub-card mb-3" th:if="${message.error() != null}">
+          <h2 class="fs-6" th:text="#{exchange.error}">Error</h2>
+          <p class="small mb-0" th:text="${message.error()}">-</p>
+        </div>
+        <div class="ub-card mb-3" th:if="${message.validationReport() != null}">
+          <h2 class="fs-6" th:text="#{exchange.validation}">Validation report</h2>
+          <pre class="small mb-0" th:text="${message.validationReport()}">-</pre>
+        </div>
+        <div class="ub-card">
+          <h2 class="fs-6" th:text="#{exchange.payload}">Payload</h2>
+          <pre class="small mb-0" th:text="${message.payload()}">-</pre>
+        </div>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>

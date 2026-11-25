@@ -46,6 +46,9 @@ public class SecurityConfig {
                 .requestMatchers("/login", "/error", "/favicon.ico",
                         "/css/**", "/js/**", "/vendor/**", "/images/**",
                         "/actuator/health", "/actuator/health/**").permitAll()
+                // the inbound webhook is called by partners, not by users:
+                // it carries its own shared secret (checked in the controller)
+                .requestMatchers("/api/exchange/inbound/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/me/theme").authenticated()
                 .requestMatchers("/actuator/**").hasRole("ADMIN")
                 .anyRequest().authenticated())

@@ -43,6 +43,40 @@ Node/npm/bundler). Runs at root context (`/`).
 
 Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 
+## What P5 delivers
+
+- **Canonical document model (BDM)** — one Java model (`CanonicalDocument`)
+  that every adapter maps into and out of: document types (invoice, credit
+  note, order, despatch, purchase invoice, statement), parties with
+  electronic addresses, lines, tax breakdown, totals, payment terms and
+  references. Totals are derived from the lines, so every protocol renders the
+  same numbers.
+- **Inbox/outbox engine** — `RECEIVED → PARSED → VALIDATED → MAPPED → APPLIED`
+  for inbound, `QUEUED → SENT` for outbound, with an **idempotency key** per
+  (organisation, partner, direction): a re-delivery returns the existing
+  message and never creates a second document. Failures retry with exponential
+  backoff, land in the **dead-letter queue** after the maximum attempts and can
+  be replayed by an operator.
+- **Adapters**
+  - *REST/JSON* — the payload is the canonical JSON; the inbound webhook is
+    `POST /api/exchange/inbound/{partnerCode}` with `X-Idempotency-Key` and a
+    shared secret (`X-Exchange-Secret`); the loopback simulators live under
+    `/api/exchange/sim/**`.
+  - *Peppol UBL* — UBL 2.1 Invoice/Credit Note per Peppol BIS Billing 3.0
+    (EN 16931) with `cbc:EndpointID` + `schemeID`, VAT breakdown and
+    `CustomizationID`/`ProfileID`; the validation reports the **exact EN 16931
+    rule id** (BR-02 … BR-27, BR-CO-25, PEPPOL-EN16931-R010/R020) and only
+    fatal rules reject.
+  - *EDI* — a hand-written X12 parser (ISA/GS/GE/IEA envelope, 850/810) with
+    997 functional acknowledgements and a hand-written EDIFACT parser
+    (UNB/UNH/UNT/UNZ, ORDERS/INVOIC) with CONTRL acknowledgements.
+  - *CSV* — flat files with one row per line and the header fields repeated.
+- **Console** — partner registry, document browser (raw payload, canonical
+  mapping, validation report), the mapping test-run console and the monitoring
+  dashboard (throughput per status, dead-letter count).
+- **Scheduler** — the retry batch runs under a MariaDB named lock
+  (`GET_LOCK`), so two replicas never deliver the same message twice.
+
 ## What P4 delivers
 
 - **Asset register** (`/assets`): assets in categories with the depreciation
