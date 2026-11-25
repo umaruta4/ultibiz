@@ -44,55 +44,86 @@
       </div>
     </header>
 
-    <nav class="ub-sidebar" aria-label="Primary">
+        <nav class="ub-sidebar" aria-label="Primary">
       <ul class="nav flex-column">
-        <li class="nav-item"><a class="nav-link active" th:href="@{/}" href="/" aria-current="page" th:text="#{nav.dashboard}">Dashboard</a></li>
         <li class="nav-item">
-          <a class="nav-link" th:href="@{/master/products}" href="/master/products" th:text="#{nav.masterData}">Master Data</a>
+          <a class="nav-link" th:href="@{/}" href="/" th:text="#{nav.dashboard}">Dashboard</a>
+        </li>
+        <li class="nav-item ub-nav-group">
+          <button class="nav-link ub-nav-toggle" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#nav-master" aria-expanded="false" aria-controls="nav-master">
+            <span th:text="#{nav.masterData}">Master Data</span>
+            <span class="ub-chevron" aria-hidden="true">&#9656;</span>
+          </button>
+          <ul class="nav flex-column collapse" id="nav-master">
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/master/products}" th:text="#{nav.masterDataProducts}">Products</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/master/parties}" th:text="#{nav.masterDataParties}">Parties</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/master/warehouses}" th:text="#{nav.masterDataWarehouses}">Warehouses</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/master/production-lines}" th:text="#{nav.masterDataProductionLines}">Production lines</a></li>
+          </ul>
+        </li>
+        <li class="nav-item ub-nav-group">
+          <button class="nav-link ub-nav-toggle" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#nav-accounting" aria-expanded="false" aria-controls="nav-accounting">
+            <span th:text="#{nav.accounting}">Accounting</span>
+            <span class="ub-chevron" aria-hidden="true">&#9656;</span>
+          </button>
+          <ul class="nav flex-column collapse" id="nav-accounting">
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/accounting/accounts}" th:text="#{acct.accounts}">Chart of accounts</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/accounting/journals}" th:text="#{acct.journals}">Journals</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/accounting/periods}" th:text="#{acct.periods}">Fiscal periods</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/accounting/trial-balance}" th:text="#{acct.trialBalance}">Trial balance</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/accounting/ar}" th:text="#{ar.invoices}">Invoices</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/accounting/ap}" th:text="#{ap.bills}">Supplier bills</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/accounting/bank}" th:text="#{bank.accounts}">Bank</a></li>
+          </ul>
+        </li>
+        <li class="nav-item ub-nav-group">
+          <button class="nav-link ub-nav-toggle" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#nav-sales" aria-expanded="false" aria-controls="nav-sales">
+            <span th:text="#{nav.sales}">Sales</span>
+            <span class="ub-chevron" aria-hidden="true">&#9656;</span>
+          </button>
+          <ul class="nav flex-column collapse" id="nav-sales">
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/orders/sales}" th:text="#{om.salesOrders}">Sales orders</a></li>
+          </ul>
+        </li>
+        <li class="nav-item ub-nav-group">
+          <button class="nav-link ub-nav-toggle" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#nav-purchasing" aria-expanded="false" aria-controls="nav-purchasing">
+            <span th:text="#{nav.purchasing}">Purchasing</span>
+            <span class="ub-chevron" aria-hidden="true">&#9656;</span>
+          </button>
+          <ul class="nav flex-column collapse" id="nav-purchasing">
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/orders/purchase}" th:text="#{om.purchaseOrders}">Purchase orders</a></li>
+          </ul>
         </li>
         <li class="nav-item">
-          <a class="nav-link ps-3 py-1 small" th:href="@{/master/products}" th:text="#{nav.masterDataProducts}">Products</a>
+          <a class="nav-link" th:href="@{/inventory}" th:text="#{inv.title}">Stock</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link ps-3 py-1 small" th:href="@{/master/parties}" th:text="#{nav.masterDataParties}">Parties</a>
+        <li class="nav-item ub-nav-group">
+          <button class="nav-link ub-nav-toggle" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#nav-manufacturing" aria-expanded="false" aria-controls="nav-manufacturing">
+            <span th:text="#{nav.manufacturing}">Manufacturing</span>
+            <span class="ub-chevron" aria-hidden="true">&#9656;</span>
+          </button>
+          <ul class="nav flex-column collapse" id="nav-manufacturing">
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/manufacturing/work-orders}" th:text="#{mfg.title}">Work orders</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/planning/mrp}" th:text="#{asset.mrp}">MRP</a></li>
+          </ul>
         </li>
-        <li class="nav-item">
-          <a class="nav-link ps-3 py-1 small" th:href="@{/master/warehouses}" th:text="#{nav.masterDataWarehouses}">Warehouses</a>
+        <li class="nav-item ub-nav-group">
+          <button class="nav-link ub-nav-toggle" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#nav-assets" aria-expanded="false" aria-controls="nav-assets">
+            <span th:text="#{nav.assets}">Assets</span>
+            <span class="ub-chevron" aria-hidden="true">&#9656;</span>
+          </button>
+          <ul class="nav flex-column collapse" id="nav-assets">
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/assets}" th:text="#{asset.register}">Asset register</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/assets/depreciation}" th:text="#{asset.depreciation}">Depreciation</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/assets/maintenance}" th:text="#{asset.maintenance}">Maintenance</a></li>
+          </ul>
         </li>
-        <li class="nav-item">
-          <a class="nav-link ps-3 py-1 small" th:href="@{/master/production-lines}" th:text="#{nav.masterDataProductionLines}">Production lines</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" th:href="@{/accounting/accounts}" href="/accounting/accounts" th:text="#{nav.accounting}">Accounting</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link ps-3 py-1 small" th:href="@{/accounting/accounts}" th:text="#{acct.accounts}">Chart of accounts</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link ps-3 py-1 small" th:href="@{/accounting/journals}" th:text="#{acct.journals}">Journals</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link ps-3 py-1 small" th:href="@{/accounting/periods}" th:text="#{acct.periods}">Fiscal periods</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link ps-3 py-1 small" th:href="@{/accounting/trial-balance}" th:text="#{acct.trialBalance}">Trial balance</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link ps-3 py-1 small" th:href="@{/accounting/ar}" th:text="#{ar.invoices}">Invoices</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link ps-3 py-1 small" th:href="@{/accounting/ap}" th:text="#{ap.bills}">Supplier bills</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link ps-3 py-1 small" th:href="@{/accounting/bank}" th:text="#{bank.accounts}">Bank</a>
-        </li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/orders/sales}" th:text="#{nav.sales}">Sales</a></li>
-        <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/orders/sales}" th:text="#{om.salesOrders}">Sales orders</a></li>
-        <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/orders/purchase}" th:text="#{om.purchaseOrders}">Purchase orders</a></li>
-        <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/inventory}" th:text="#{inv.title}">Stock</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/manufacturing/work-orders}" th:text="#{nav.manufacturing}">Manufacturing</a></li>
-        <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/manufacturing/work-orders}" th:text="#{mfg.title}">Work orders</a></li>
-        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.assets}">Assets</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.hrm}">HRM</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.projects}">Projects</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.crm}">CRM</a></li>

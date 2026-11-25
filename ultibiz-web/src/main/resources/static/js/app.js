@@ -80,3 +80,31 @@
   });
   document.addEventListener('DOMContentLoaded', recalc);
 })();
+
+// --- sidebar: open the group of the current page ---------------------------
+// The server renders every group collapsed; here we find the link that best
+// matches the current path (longest href wins), mark it active and open its
+// parent group.
+(function () {
+  'use strict';
+  var path = window.location.pathname;
+  var best = null;
+  document.querySelectorAll('.ub-sidebar a.nav-link[href]').forEach(function (link) {
+    var href = link.getAttribute('href');
+    if (!href || href === '#') { return; }
+    var matches = href === '/' ? path === '/' : path.indexOf(href) === 0;
+    if (matches && (!best || href.length > best.getAttribute('href').length)) {
+      best = link;
+    }
+  });
+  if (best) {
+    best.classList.add('active');
+    best.setAttribute('aria-current', 'page');
+    var group = best.closest('.collapse');
+    if (group) {
+      group.classList.add('show');
+      var toggle = document.querySelector('[data-bs-target="#' + group.id + '"]');
+      if (toggle) { toggle.setAttribute('aria-expanded', 'true'); }
+    }
+  }
+})();

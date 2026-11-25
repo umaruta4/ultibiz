@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{asset.title}">Assets</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{asset.register}">Asset register</h1>
+      <div class="d-flex gap-2">
+        <a class="btn btn-sm btn-outline-secondary" th:href="@{/assets/depreciation}" th:text="#{asset.depreciation}">Depreciation</a>
+        <a class="btn btn-sm btn-outline-secondary" th:href="@{/assets/maintenance}" th:text="#{asset.maintenance}">Maintenance</a>
+        <a class="btn btn-sm btn-primary" th:href="@{/assets/new}" th:text="#{asset.new}">New asset</a>
+      </div>
+    </div>
+
+    <form method="get" th:action="@{/assets}" class="row g-2 mb-3">
+      <div class="col-6 col-md-3">
+        <select class="form-select form-select-sm" name="status">
+          <option value="" th:text="#{asset.allStatuses}">All statuses</option>
+          <option th:each="s : ${ {'IN_SERVICE', 'IDLE', 'DISPOSED'} }" th:value="${s}" th:text="${s}" th:selected="${s == status}">IN_SERVICE</option>
+        </select>
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-sm btn-outline-secondary" type="submit" th:text="#{md.filter}">Filter</button>
+      </div>
+    </form>
+
+    <div class="ub-card mb-3">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr>
+            <th scope="col" th:text="#{asset.code}">Code</th>
+            <th scope="col" th:text="#{asset.name}">Name</th>
+            <th scope="col" th:text="#{asset.category}">Category</th>
+            <th scope="col" class="text-end" th:text="#{asset.cost}">Cost</th>
+            <th scope="col" class="text-end" th:text="#{asset.bookValue}">Book value</th>
+            <th scope="col" th:text="#{asset.status}">Status</th>
+          </tr></thead>
+          <tbody>
+            <tr th:each="a : ${assets.items()}">
+              <td><a class="font-monospace" th:href="@{/assets/{id}(id=${a.id()})}" th:text="${a.code()}">AST-1</a></td>
+              <td th:text="${a.name()}">-</td>
+              <td class="ub-muted" th:text="${categories[a.categoryId()]}">-</td>
+              <td class="text-end" th:text="${a.acquisitionCost()}">0</td>
+              <td class="text-end" th:text="${a.bookValue()}">0</td>
+              <td><span class="badge text-bg-secondary" th:text="${a.status()}">IN_SERVICE</span></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(assets.items())}"><td colspan="6" class="ub-muted text-center" th:text="#{md.noData}">No assets.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center">
+      <span class="ub-muted small"
+            th:text="${assets.page + 1} + ' / ' + ${assets.pageCount()} + ' (' + ${assets.total()} + ' ' + #{md.rows} + ')'">1 / 1</span>
+      <div class="btn-group btn-group-sm">
+        <a class="btn btn-outline-secondary" th:if="${assets.page > 0}"
+           th:href="@{/assets(status=${status},page=${assets.page - 1},size=${size})}">&laquo;</a>
+        <a class="btn btn-outline-secondary" th:if="${assets.page + 1 < assets.pageCount()}"
+           th:href="@{/assets(status=${status},page=${assets.page + 1},size=${size})}">&raquo;</a>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>

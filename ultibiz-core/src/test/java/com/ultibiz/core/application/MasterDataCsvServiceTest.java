@@ -86,7 +86,8 @@ class MasterDataCsvServiceTest {
         ProductRepository products = mock(ProductRepository.class);
         UomRepository uoms = mock(UomRepository.class);
         Product product = new Product(1L, 1L, null, "BRG-1", "Bearing", "GOODS", "PCS", null,
-                false, false, true, new BigDecimal("45000.0000"), "IDR", null, null, true, 0L);
+                false, false, true, new BigDecimal("45000.0000"), "IDR", null, null, true,
+                0, BigDecimal.ZERO, BigDecimal.ZERO, false, 0L);
         String csv = service(products, uoms).exportProducts(List.of(product));
 
         assertTrue(csv.startsWith("code,name,product_type,uom_code"));

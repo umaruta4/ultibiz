@@ -43,6 +43,27 @@ Node/npm/bundler). Runs at root context (`/`).
 
 Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 
+## What P4 delivers
+
+- **Asset register** (`/assets`): assets in categories with the depreciation
+  rule of the category — straight line, declining balance or units of
+  production. Registration, transfer between sites, disposal with the
+  proceeds-versus-book-value gain/loss posted to the ledger.
+- **Monthly depreciation run** (`/assets/depreciation`): one journal per
+  period for the whole register, idempotent (a period cannot be depreciated
+  twice); the book value never drops below the salvage value.
+- **Maintenance** (`/assets/maintenance`): recurring plans per category,
+  scheduled jobs with due dates and completion cost, meter readings that drive
+  the units-of-production depreciation.
+- **MRP suggestions** (`/planning/mrp`): net requirement per product = open
+  sales demand + safety stock − on hand − on order, rounded up to the minimum
+  order quantity, suggested date = today + lead time.
+- Schema for the next step is already in place: multi-level BOM lines
+  (phantoms), engineering change notices, shift calendar, lot/serial
+  traceability on stock movements and receipts.
+- The sidebar groups its submenus behind collapsible sections with a chevron;
+  the group of the current page opens automatically.
+
 ## What P3 delivers
 
 - **Sales orders**: line totals with discounts, tax per the country pack, and a

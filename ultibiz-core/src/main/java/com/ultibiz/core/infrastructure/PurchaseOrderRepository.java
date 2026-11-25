@@ -164,4 +164,22 @@ public class PurchaseOrderRepository {
         Object value = rs.getObject(column);
         return value == null ? null : ((Number) value).intValue();
     }
+
+    /** On-order quantity per product from the open purchase orders. */
+    public List<Demand> openSupply(long organizationId) {
+        return jdbc.query("""
+                SELECT l.product_id AS product_id,
+                       SUM(l.quantity - l.quantity_received) AS quantity
+                FROM purchase_order_line l
+                JOIN purchase_order o ON o.id = l.order_id
+                WHERE o.organization_id = ? AND o.status IN ('CONFIRMED', 'PARTIALLY_RECEIVED')
+                  AND l.product_id IS NOT NULL
+                GROUP BY l.product_id
+                """, (rs, n) -> new Demand(rs.getLong("product_id"), rs.getBigDecimal("quantity")),
+                organizationId);
+    }
+
+    /** A demand or supply quantity per product. */
+    public record Demand(long productId, java.math.BigDecimal quantity) {
+    }
 }

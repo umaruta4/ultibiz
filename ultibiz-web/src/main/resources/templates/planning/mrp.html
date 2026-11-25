@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{asset.mrp}">MRP</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{asset.mrpTitle}">Material requirements</h1>
+      <form method="get" th:action="@{/planning/mrp}" class="d-flex gap-2">
+        <input class="form-control form-control-sm" type="date" name="on" th:value="${on}">
+        <button class="btn btn-sm btn-outline-secondary" type="submit" th:text="#{md.filter}">Filter</button>
+      </form>
+    </div>
+
+    <div class="ub-card">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr>
+            <th scope="col" th:text="#{asset.code}">Code</th>
+            <th scope="col" th:text="#{asset.name}">Name</th>
+            <th scope="col" class="text-end" th:text="#{asset.demand}">Demand</th>
+            <th scope="col" class="text-end" th:text="#{asset.onHand}">On hand</th>
+            <th scope="col" class="text-end" th:text="#{asset.onOrder}">On order</th>
+            <th scope="col" class="text-end" th:text="#{asset.safetyStock}">Safety</th>
+            <th scope="col" class="text-end" th:text="#{asset.netRequirement}">Net</th>
+            <th scope="col" th:text="#{asset.suggestedDate}">Suggested</th>
+          </tr></thead>
+          <tbody>
+            <tr th:each="s : ${suggestions}">
+              <td class="font-monospace" th:text="${s.productCode()}">P</td>
+              <td th:text="${s.productName()}">-</td>
+              <td class="text-end" th:text="${s.demand()}">0</td>
+              <td class="text-end" th:text="${s.onHand()}">0</td>
+              <td class="text-end" th:text="${s.onOrder()}">0</td>
+              <td class="text-end" th:text="${s.safetyStock()}">0</td>
+              <td class="text-end fw-semibold" th:text="${s.netRequirement()}">0</td>
+              <td th:text="${s.suggestedDate()}">-</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(suggestions)}"><td colspan="8" class="ub-muted text-center" th:text="#{asset.noSuggestions}">No suggestions.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>

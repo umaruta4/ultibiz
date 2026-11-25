@@ -9,5 +9,7 @@ public record BomLine(
         int lineNo,
         long componentProductId,
         BigDecimal quantity,
-        BigDecimal scrapPercent) {
+        BigDecimal scrapPercent,
+        Long parentLineId,
+        boolean phantom) {
 }

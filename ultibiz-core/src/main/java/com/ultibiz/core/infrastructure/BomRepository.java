@@ -53,7 +53,8 @@ public class BomRepository {
 
     public List<BomLine> lines(long bomId) {
         return jdbc.query("""
-                SELECT id, bom_id, line_no, component_product_id, quantity, scrap_percent
+                SELECT id, bom_id, line_no, component_product_id, quantity, scrap_percent,
+                       parent_line_id, is_phantom
                 FROM bom_line WHERE bom_id = ? ORDER BY line_no
                 """, (rs, n) -> new BomLine(
                 rs.getLong("id"),
@@ -61,7 +62,9 @@ public class BomRepository {
                 rs.getInt("line_no"),
                 rs.getLong("component_product_id"),
                 rs.getBigDecimal("quantity"),
-                rs.getBigDecimal("scrap_percent")), bomId);
+                rs.getBigDecimal("scrap_percent"),
+                nullableLong(rs, "parent_line_id"),
+                rs.getBoolean("is_phantom")), bomId);
     }
 
     /** MariaDB returns BIGINT UNSIGNED as BigInteger, not Long. */

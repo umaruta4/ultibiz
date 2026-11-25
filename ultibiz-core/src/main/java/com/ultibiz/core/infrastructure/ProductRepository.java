@@ -5,6 +5,7 @@ import com.ultibiz.core.application.SiteScope;
 import com.ultibiz.core.application.SiteScopedSql;
 import com.ultibiz.core.domain.Product;
 import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import org.jooq.DSLContext;
@@ -21,7 +22,8 @@ public class ProductRepository {
     private static final String COLUMNS = """
             id, organization_id, site_id, code, name, product_type, uom_code, barcode,
             batch_tracked, serial_tracked, track_inventory, standard_cost, currency,
-            tax_category_id, description, is_active, row_version
+            tax_category_id, description, is_active, lead_time_days, safety_stock,
+            minimum_order_quantity, is_phantom, row_version
             """;
 
     private final DSLContext dsl;
@@ -166,6 +168,12 @@ public class ProductRepository {
                 RowValues.asNullableLong(r.get("tax_category_id")),
                 RowValues.asString(r.get("description")),
                 RowValues.asBoolean(r.get("is_active")),
+                RowValues.asInt(r.get("lead_time_days")),
+                r.get("safety_stock") == null ? BigDecimal.ZERO
+                        : new BigDecimal(String.valueOf(r.get("safety_stock"))),
+                r.get("minimum_order_quantity") == null ? BigDecimal.ZERO
+                        : new BigDecimal(String.valueOf(r.get("minimum_order_quantity"))),
+                RowValues.asBoolean(r.get("is_phantom")),
                 RowValues.asLong(r.get("row_version")));
     }
 }

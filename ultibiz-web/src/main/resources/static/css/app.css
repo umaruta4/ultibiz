@@ -229,3 +229,26 @@ body {
   font-weight: 700;
   color: var(--ub-text);
 }
+
+/* Sidebar groups: the main item is a button that opens/closes its submenu.
+   The chevron rotates while the group is open. */
+.ub-nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: .5rem;
+  background: none;
+  border: 0;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+.ub-chevron {
+  font-size: .7rem;
+  line-height: 1;
+  transition: transform .15s ease-in-out;
+}
+.ub-nav-toggle[aria-expanded="true"] .ub-chevron {
+  transform: rotate(90deg);
+}

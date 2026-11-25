@@ -23,5 +23,9 @@ public record Product(
         Long taxCategoryId,
         String description,
         boolean active,
+        int leadTimeDays,
+        BigDecimal safetyStock,
+        BigDecimal minimumOrderQuantity,
+        boolean phantom,
         long rowVersion) {
 }

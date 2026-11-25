@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{asset.depreciation}">Depreciation</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{asset.depreciation}">Depreciation</h1>
+      <a class="btn btn-sm btn-outline-secondary" th:href="@{/assets}" th:text="#{asset.register}">Asset register</a>
+    </div>
+
+    <form method="post" th:action="@{/assets/depreciation/run}" class="ub-card mb-3">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <div class="row g-2 align-items-end">
+        <div class="col-6 col-md-3">
+          <label class="form-label" for="year" th:text="#{asset.year}">Year</label>
+          <input class="form-control" type="number" id="year" name="year" th:value="${period.year}" required>
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label" for="month" th:text="#{asset.month}">Month</label>
+          <input class="form-control" type="number" min="1" max="12" id="month" name="month" th:value="${period.monthValue}" required>
+        </div>
+        <div class="col-12 col-md-6">
+          <button class="btn btn-primary" type="submit" th:text="#{asset.depreciationRun}">Run depreciation</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="ub-card">
+      <h2 class="fs-6" th:text="${period.year} + '-' + ${#numbers.formatInteger(period.monthValue, 2)}">2026-11</h2>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr>
+            <th scope="col" th:text="#{asset.code}">Code</th>
+            <th scope="col" th:text="#{asset.name}">Name</th>
+            <th scope="col" th:text="#{asset.depreciationMethod}">Method</th>
+            <th scope="col" class="text-end" th:text="#{asset.amount}">Amount</th>
+            <th scope="col" class="text-end" th:text="#{asset.accumulated}">Accumulated</th>
+            <th scope="col" class="text-end" th:text="#{asset.bookValue}">Book value</th>
+          </tr></thead>
+          <tbody>
+            <tr th:each="r : ${rows}">
+              <td class="font-monospace" th:text="${r.assetId()}">1</td>
+              <td>-</td>
+              <td class="ub-muted" th:text="${r.method()}">STRAIGHT_LINE</td>
+              <td class="text-end" th:text="${r.depreciationAmount()}">0</td>
+              <td class="text-end" th:text="${r.accumulatedAmount()}">0</td>
+              <td class="text-end" th:text="${r.bookValueAfter()}">0</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(rows)}"><td colspan="6" class="ub-muted text-center" th:text="#{asset.noDepreciation}">No depreciation for this period.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </th:block>
+</body>
+</html>
