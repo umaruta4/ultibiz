@@ -50,6 +50,14 @@ ultibiz:
     # shared secret the partners send in the X-Exchange-Secret header
     webhook-secret: ${ULTIBIZ_EXCHANGE_WEBHOOK_SECRET:}
     retry-delay-ms: ${ULTIBIZ_EXCHANGE_RETRY_DELAY_MS:60000}
+  dashboard:
+    # where the scheduled reports are written
+    report-dir: ${ULTIBIZ_REPORT_DIR:/home/sufehmi/ultibiz-reports}
+    # optional webhook that receives the generated report (empty = file only)
+    delivery-webhook: ${ULTIBIZ_DASHBOARD_DELIVERY_WEBHOOK:}
+  ai:
+    # the key that encrypts the AI provider keys (AES); without it no key is stored
+    encryption-key: ${ULTIBIZ_AI_ENCRYPTION_KEY:}
 
 logging:
   level:

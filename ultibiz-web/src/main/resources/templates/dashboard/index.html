@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{dash.title}">Dashboard</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{dash.title}">Dashboard</h1>
+      <div class="d-flex gap-2">
+        <a class="btn btn-sm btn-outline-secondary" th:href="@{/dashboard/views}" th:text="#{dash.savedViews}">Saved views</a>
+        <a class="btn btn-sm btn-outline-secondary" th:href="@{/dashboard/reports}" th:text="#{dash.reports}">Reports</a>
+      </div>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(alerts)}" class="ub-card mb-3 border-danger">
+      <h2 class="fs-6 mb-2" th:text="#{dash.alerts}">Alerts</h2>
+      <ul class="list-unstyled small mb-0">
+        <li th:each="alert : ${alerts}" class="d-flex justify-content-between align-items-center py-1">
+          <span>
+            <span class="badge"
+                  th:classappend="${alert.severity == 'CRITICAL'} ? 'text-bg-danger' : 'text-bg-warning'"
+                  th:text="${alert.severity}">WARNING</span>
+            <span th:text="${alert.label}">label</span>
+          </span>
+          <span class="ub-muted">
+            <span th:text="${alert.value}">0</span>
+            <span th:text="'(' + ${alert.comparison} + ' ' + ${alert.threshold} + ')'">(0)</span>
+          </span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-md-4 col-xl-3" th:each="tile : ${tiles}">
+        <div class="ub-card h-100">
+          <div class="ub-muted small" th:text="${tile.metric.title}">Tile</div>
+          <div class="fs-4 fw-semibold" th:text="${tile.value}">0</div>
+          <div class="ub-muted small" th:text="${tile.metric.module}">module</div>
+          <a th:if="${tile.metric.drillPath != null}" class="small" th:href="@{${tile.metric.drillPath}}"
+             th:text="#{dash.drillThrough}">Drill through</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="ub-card">
+      <h2 class="fs-6 mb-2" th:text="#{dash.insightBoard}">Insight board</h2>
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+          <tr>
+            <th th:text="#{dash.rule}">Rule</th>
+            <th th:text="#{dash.severity}">Severity</th>
+            <th th:text="#{dash.finding}">Finding</th>
+            <th th:text="#{dash.suggestedAction}">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="insight : ${insights}">
+            <td th:text="${insight.ruleCode}">rule</td>
+            <td><span class="badge"
+                      th:classappend="${insight.severity == 'CRITICAL'} ? 'text-bg-danger' : 'text-bg-warning'"
+                      th:text="${insight.severity}">WARNING</span></td>
+            <td th:text="${insight.evidence}">evidence</td>
+            <td class="small" th:text="${insight.suggestedAction}">action</td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(insights)}">
+            <td colspan="4" class="ub-muted" th:text="#{dash.noFindings}">No findings</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </th:block>
+</body>
+</html>

@@ -51,7 +51,19 @@
         <nav class="ub-sidebar" aria-label="Primary">
       <ul class="nav flex-column">
         <li class="nav-item">
-          <a class="nav-link" th:href="@{/}" href="/" th:text="#{nav.dashboard}">Dashboard</a>
+          <a class="nav-link" th:href="@{/}" href="/" th:text="#{nav.home}">Home</a>
+        </li>
+        <li class="nav-item ub-nav-group">
+          <button class="nav-link ub-nav-toggle" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#nav-dashboard" aria-expanded="false" aria-controls="nav-dashboard">
+            <span th:text="#{nav.dashboard}">Dashboard</span>
+            <span class="ub-chevron" aria-hidden="true">&#9656;</span>
+          </button>
+          <ul class="nav flex-column collapse" id="nav-dashboard">
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/dashboard}" th:text="#{dash.title}">KPI board</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/dashboard/views}" th:text="#{dash.savedViews}">Saved views</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/dashboard/reports}" th:text="#{dash.reports}">Reports</a></li>
+          </ul>
         </li>
         <li class="nav-item ub-nav-group">
           <button class="nav-link ub-nav-toggle" type="button" data-bs-toggle="collapse"

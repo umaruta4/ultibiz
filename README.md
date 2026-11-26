@@ -43,7 +43,7 @@ Node/npm/bundler). Runs at root context (`/`).
 
 Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 
-## What P8 delivers (plugins 1–3 of 6: HRM, Projects, CRM)
+## What P8 delivers (plugins 1–4 of 6: HRM, Projects, CRM, Dashboard)
 
 **Projects.** Delivery work with real money behind it:
 
@@ -53,6 +53,15 @@ Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 - **Resource assignments** with a capacity rule: an employee is never allocated more than the weekly hours of their contract across overlapping assignments (the conflict is refused with the exact numbers).
 - **Cost & revenue tracking**: the approved HRM timesheets of the project code become the labour cost at the contractual hourly rate (base / (weekly hours × 4.348125)); billable hours at the billing rate plus invoiced milestones become the revenue; the report shows hours, cost, revenue, profitability and budget usage per project and per employee.
 - One end-to-end IT: timesheet approved in HRM → project cost → milestone invoiced → journal posted → profitability.
+
+**Dashboard.** The cockpit, role-aware:
+
+- **KPI tiles** from the real ERP data — revenue this month, overdue receivables, cash on hand, open sales/purchase orders, stock value, headcount, leave requests waiting, CRM pipeline, project budget. Every tile carries the permission codes that make it visible, so a role sees its own cockpit; every tile has a **drill-through** link into the module it measures.
+- **Thresholds & alerts**: a metric above (or below) a configured value raises an alert with its severity (INFO / WARNING / CRITICAL), sorted by severity.
+- **Saved views**: a named filter set per module, personal or shared with the organisation.
+- **Scheduled reports**: a subscription per user (daily / weekly / monthly — the weekly run always lands on Monday), the report is written to disk as CSV or a print-ready HTML page (the browser can save it as PDF) and offered for download; when `ULTIBIZ_DASHBOARD_DELIVERY_WEBHOOK` is set the report is also posted to that webhook.
+- **Insight board** on the same page: it consumes the `AiInsightProvider` rules (negative stock, below safety stock, overdue AR) with evidence, confidence and a suggested action.
+- A scheduler writes the due reports under a MariaDB named lock, so two replicas never write the same report twice.
 
 **CRM.** The commercial side, from a stranger to a signed order:
 
@@ -64,6 +73,15 @@ Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 - One end-to-end IT: lead → qualify → convert (party + opportunity) → pipeline rules → hand-off (real sales order) → won → activities.
 
 **HRM.** The people side of the company, end to end:
+
+**Dashboard.** The cockpit, role-aware:
+
+- **KPI tiles** from the real ERP data — revenue this month, overdue receivables, cash on hand, open sales/purchase orders, stock value, headcount, leave requests waiting, CRM pipeline, project budget. Every tile carries the permission codes that make it visible, so a role sees its own cockpit; every tile has a **drill-through** link into the module it measures.
+- **Thresholds & alerts**: a metric above (or below) a configured value raises an alert with its severity (INFO / WARNING / CRITICAL), sorted by severity.
+- **Saved views**: a named filter set per module, personal or shared with the organisation.
+- **Scheduled reports**: a subscription per user (daily / weekly / monthly — the weekly run always lands on Monday), the report is written to disk as CSV or a print-ready HTML page (the browser can save it as PDF) and offered for download; when `ULTIBIZ_DASHBOARD_DELIVERY_WEBHOOK` is set the report is also posted to that webhook.
+- **Insight board** on the same page: it consumes the `AiInsightProvider` rules (negative stock, below safety stock, overdue AR) with evidence, confidence and a suggested action.
+- A scheduler writes the due reports under a MariaDB named lock, so two replicas never write the same report twice.
 
 **CRM.** The commercial side, from a stranger to a signed order:
 

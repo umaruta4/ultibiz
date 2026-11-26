@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{dash.reports}">Dashboard</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{dash.reports}">Reports</h1>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-lg-4">
+        <div class="ub-card">
+          <h2 class="fs-6 mb-2" th:text="#{dash.subscribe}">Subscribe to a report</h2>
+          <form method="post" th:action="@{/dashboard/reports}" class="vstack gap-2">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <select class="form-select form-select-sm" name="reportCode">
+              <option th:each="entry : ${catalogue}" th:value="${entry[0]}" th:text="${entry[1]}">Report</option>
+            </select>
+            <select class="form-select form-select-sm" name="frequency">
+              <option value="DAILY">DAILY</option>
+              <option value="WEEKLY">WEEKLY</option>
+              <option value="MONTHLY" selected>MONTHLY</option>
+            </select>
+            <select class="form-select form-select-sm" name="format">
+              <option value="CSV">CSV</option>
+              <option value="HTML">HTML</option>
+            </select>
+            <input class="form-control form-control-sm" name="email" type="email" th:placeholder="#{dash.email}">
+            <button class="btn btn-sm btn-primary" type="submit" th:text="#{dash.subscribe}">Subscribe</button>
+          </form>
+        </div>
+      </div>
+      <div class="col-12 col-lg-8">
+        <div class="ub-card mb-3">
+          <h2 class="fs-6 mb-2" th:text="#{dash.subscriptions}">Subscriptions</h2>
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th th:text="#{dash.report}">Report</th>
+                <th th:text="#{dash.frequency}">Frequency</th>
+                <th th:text="#{dash.nextRun}">Next run</th>
+                <th th:text="#{dash.status}">Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="subscription : ${subscriptions}">
+                <td th:text="${subscription.title}">report</td>
+                <td th:text="${subscription.frequency}">MONTHLY</td>
+                <td th:text="${subscription.nextRunAt}">date</td>
+                <td th:text="${subscription.lastStatus} ?: '—'">—</td>
+                <td class="text-end">
+                  <form method="post" th:action="@{/dashboard/reports/{id}/run(id=${subscription.id})}">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button class="btn btn-sm btn-outline-primary" type="submit" th:text="#{dash.runNow}">Run now</button>
+                  </form>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(subscriptions)}">
+                <td colspan="5" class="ub-muted" th:text="#{dash.noSubscriptions}">No subscriptions</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="ub-card">
+          <h2 class="fs-6 mb-2" th:text="#{dash.generatedFiles}">Generated files</h2>
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th th:text="#{dash.report}">Report</th>
+                <th th:text="#{dash.period}">Period</th>
+                <th th:text="#{dash.format}">Format</th>
+                <th th:text="#{dash.delivery}">Delivery</th>
+                <th th:text="#{dash.generated}">Generated</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="file : ${files}">
+                <td th:text="${file.reportCode}">report</td>
+                <td th:text="${file.period}">period</td>
+                <td th:text="${file.format}">CSV</td>
+                <td><span class="badge" th:classappend="${file.deliveryStatus == 'DELIVERED'} ? 'text-bg-success' : 'text-bg-secondary'"
+                          th:text="${file.deliveryStatus}">FILE_READY</span></td>
+                <td class="small" th:text="${file.generatedAt}">at</td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(files)}">
+                <td colspan="5" class="ub-muted" th:text="#{dash.noFiles}">No files yet</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </th:block>
+</body>
+</html>
