@@ -13,13 +13,17 @@ Node/npm/bundler). Runs at root context (`/`).
 | **P1** | Master data + multi-site (product, party, warehouse/rack/bin/dock, production line, work center), numbering engine, country/tax SPI, CSV import/export, master-data screens | **done** |
 | **P2** | Accounting: chart of accounts, fiscal periods, double-entry posting engine, reversals, tax packs (ID PPN + EU VAT), multi-currency, trial balance, accounting screens | **done** |
 | **P2b** | AR/AP: invoices, bills, receipts, payments, allocations, ageing, three-way match, bank statement import + reconciliation | **done** |
-| **P3** | Sales & purchase orders, goods receipts, stock (moving average), BOM + work orders, order/inventory/manufacturing screens | **done** (core) |
-| P4 | Asset management + HRM | planned |
-| P5 | Projects + CRM + sales pipeline | planned |
-| P6 | Dashboard + Knowledge Vault (RAG) + Helpdesk | planned |
-| P7 | Data exchange: EDI, Peppol UBL, REST/JSON | planned |
-| P8 | Offline sync, admin console, upgrades | planned |
-| P9 | AI assistant, Kubernetes hardening, performance | planned |
+| **P3** | Sales & purchase orders, goods receipts, stock (moving average), BOM + work orders, order/inventory/manufacturing screens | **done** |
+| **P4** | Asset register, depreciation (SL/DB/UoP), disposal, maintenance, MRP | **done** |
+| **P5** | Data exchange: canonical BDM, inbox/outbox, REST + CSV + Peppol UBL + EDI adapters, console, scheduler | **done** |
+| **P6** | Offline-first client (IndexedDB outbox, service worker, PWA), sync API, conflict policy, conflict centre | **done** |
+| **P7** | AI assistant: provider gateway, per-organisation config, tools with human confirmation, insights, RAG over the knowledge vault | **done** |
+| **P8** | The six plugins: HRM, Projects, CRM, Dashboard, Knowledge Vault, Helpdesk | **done** |
+| **P9** | Hardening & release: rate limit, backup + restore drill, release gate, runbook, security notes | **done** |
+| **P10** | Native PDF reports, the report e-mail (SMTP + API provider), the CI pipeline | **done** |
+| **P11** | The e-mail settings in the administration interface (sealed secrets, test e-mail) | **done** |
+| **P12** | SSO / OpenID Connect with Keycloak: auto-provisioning, role mapping, OIDC logout, fallback login form | **done** (code — the live handshake needs a Keycloak instance) |
+| **P13** | Multi-tenant on the database level: the tenant registry, the routing connection, the provisioning of a tenant database | **done** (the mode `single` stays the default) |
 
 ## What P2b delivers
 
@@ -42,6 +46,25 @@ Node/npm/bundler). Runs at root context (`/`).
   `/accounting/ap/aging`, `/accounting/ap/{id}/match`, `/accounting/bank`.
 
 Details: schema migration `V202611250005__p2b_ar_ap.sql`.
+
+## What P12 delivers (the single sign-on with Keycloak)
+
+- **OpenID Connect** (OAuth 2.0 authorization code) through the Spring Security OAuth2 client — the profile `sso` activates it, without a client registration the **login form keeps working** (the fallback).
+- **Auto-provisioning**: an unknown user of the identity provider gets a local user (a random password that cannot be used on the login form, the default organisation and the default role). The second login reuses the row.
+- **The session stays local**: after the OIDC login the request runs with the normal UltiBiz principal — the permissions, the site scope and the audit behave exactly like with the login form.
+- **The role mapping**: the roles of the provider (`ultibiz-admin`, `ultibiz-user`) become the local authorities; the administrator role of the provider is carried over.
+- **OIDC logout**: the session of UltiBiz ends with the session of the provider.
+- **The realm template** `deploy/keycloak/realm-ultibiz.json` (the realm `ultibiz`, the client `ultibiz`, the redirect URI `https://ultibiz.ahadmart.com/login/oauth2/code/keycloak`, the protocol mappers) and the guide `docs/SSO.md`.
+
+## What P13 delivers (one database per organisation)
+
+- **The control database** keeps the identity (the organisations, the users, the roles, the site scopes) and the **tenant registry** (`tenant_registry`); every tenant owns a database with its own business data.
+- **The routing**: the connection of a request goes to the database of the organisation of the logged-in user (a filter puts the tenant on the thread, the routing data source gives the connection). The mode `single` (the default) changes nothing for the existing installation; the mode `database` activates the routing.
+- **The provisioning** in **Administration → Tenants**: the database is created, the migrations run on it, the demo data is removed and the identity of the organisation is copied. The administrator of the MariaDB server does the creation (`ULTIBIZ_DB_ADMIN_USER` / `ULTIBIZ_DB_ADMIN_PASSWORD`).
+- **The suspension**: a suspended tenant falls back to the control database.
+- **The test**: `TenantDatabaseIntegrationTest` provisions a real second database and proves that a row written in the tenant is **not** in the control database.
+
+Details: `docs/MULTI-TENANT.md`.
 
 ## What P11 delivers (the e-mail settings in the interface)
 

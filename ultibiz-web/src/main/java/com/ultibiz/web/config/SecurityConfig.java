@@ -40,7 +40,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                            org.springframework.beans.factory.ObjectProvider<
+                                                    org.springframework.security.oauth2.client.registration
+                                                            .ClientRegistrationRepository> registrations,
+                                            org.springframework.beans.factory.ObjectProvider<
+                                                    com.ultibiz.web.security.SsoSuccessHandler> ssoHandler)
+            throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/login", "/error", "/favicon.ico",
@@ -85,6 +91,15 @@ public class SecurityConfig {
                         org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter
                                 .ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
                 .frameOptions(frame -> frame.sameOrigin()));
+        // the single sign-on is only configured with the profile "sso":
+        // without it there is no client registration and the login is unchanged
+        if (registrations.getIfAvailable() != null && ssoHandler.getIfAvailable() != null) {
+            http.oauth2Login(login -> login
+                    .loginPage("/login")
+                    .successHandler(ssoHandler.getObject())
+                    .failureUrl("/login?error=sso"));
+            http.oidcLogout();
+        }
         return http.build();
     }
 

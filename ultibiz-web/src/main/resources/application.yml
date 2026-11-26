@@ -91,6 +91,20 @@ ultibiz:
   ai:
     # the key that encrypts the AI provider keys (AES); without it no key is stored
     encryption-key: ${ULTIBIZ_AI_ENCRYPTION_KEY:}
+  tenant:
+    # single = one database for every organisation (the default, the behaviour
+    # of the single-tenant installation); database = one database per tenant,
+    # the connection of a request goes to the database of its organisation
+    mode: ${ULTIBIZ_TENANT_MODE:single}
+    # the control database (the identity and the registry)
+    control-database: ${ULTIBIZ_DB_NAME:ultibiz}
+    application-user: ${ULTIBIZ_DB_USER:ultibiz}
+    application-password: ${ULTIBIZ_DB_PASSWORD:}
+    # the administrator of the MariaDB server (creates the tenant databases)
+    admin-user: ${ULTIBIZ_DB_ADMIN_USER:root}
+    admin-password: ${ULTIBIZ_DB_ADMIN_PASSWORD:${MARIADB_ROOT_PASSWORD:}}
+    admin-host: ${ULTIBIZ_DB_HOST:127.0.0.1}
+    admin-port: ${ULTIBIZ_DB_PORT:3311}
 
 logging:
   level:

@@ -240,6 +240,7 @@
           </button>
           <ul class="nav flex-column collapse" id="nav-admin">
             <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/admin/settings/email}" th:text="#{mail.settings}">E-mail settings</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/admin/settings/tenants}" th:text="#{admin.tenants.title}">Tenants</a></li>
           </ul>
         </li>
       </ul>
@@ -247,6 +248,7 @@
 
     <main id="main-content" class="ub-content">
       <div class="alert alert-success py-2" role="status" th:if="${flash != null}" th:text="#{${flash}}">Saved</div>
+      <div class="alert alert-danger py-2" role="alert" th:if="${error != null}" th:text="${error}"></div>
       <div class="alert alert-warning py-2" role="status" data-offline-banner hidden
            th:text="#{sync.offlineBanner}">You are offline. Changes are stored locally and synced later.</div>
       <th:block th:replace="${content}"></th:block>

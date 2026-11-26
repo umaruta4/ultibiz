@@ -1,0 +1,74 @@
+{
+  "realm": "ultibiz",
+  "enabled": true,
+  "displayName": "UltiBiz",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "roles": {
+    "realm": [
+      { "name": "ultibiz-admin", "description": "The administrator of UltiBiz" },
+      { "name": "ultibiz-user", "description": "A normal user of UltiBiz" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "ultibiz",
+      "name": "UltiBiz ERP",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "CHANGE-ME-GENERATE-A-SECRET",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["https://ultibiz.ahadmart.com/login/oauth2/code/keycloak"],
+      "webOrigins": ["https://ultibiz.ahadmart.com"],
+      "attributes": {
+        "post.logout.redirect.uris": "https://ultibiz.ahadmart.com/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "email",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "config": {
+            "user.attribute": "email",
+            "claim.name": "email",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "budi",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Budi",
+      "lastName": "Santoso",
+      "email": "budi@example.com",
+      "credentials": [{ "type": "password", "value": "CHANGE-ME", "temporary": false }],
+      "realmRoles": ["ultibiz-user"]
+    }
+  ]
+}

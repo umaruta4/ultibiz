@@ -41,6 +41,11 @@
 
         <button type="submit" class="btn btn-primary w-100" th:text="#{login.submit}">Sign in</button>
       </form>
+
+      <div th:if="${ssoEnabled}" class="mt-3 text-center">
+        <a class="btn btn-outline-secondary w-100" th:href="@{/oauth2/authorization/keycloak}"
+           th:text="#{login.sso}">Sign in with Keycloak</a>
+      </div>
     </div>
   </main>
 </body>

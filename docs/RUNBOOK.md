@@ -88,6 +88,11 @@ job twice.
 | `ULTIBIZ_MAILGUN_DOMAIN` / `ULTIBIZ_MAILGUN_API_KEY` | the Mailgun domain and key (provider `mailgun`); `ULTIBIZ_MAILGUN_REGION=eu` for the EU region |
 | `ULTIBIZ_EMAIL_WEBHOOK_URL` / `ULTIBIZ_EMAIL_WEBHOOK_SECRET` | the generic e-mail webhook (provider `webhook`) |
 | `ULTIBIZ_SMTP_HOST` / `ULTIBIZ_SMTP_USER` / `ULTIBIZ_SMTP_PASSWORD` / `ULTIBIZ_SMTP_FROM` | the SMTP relay (when no API provider is selected) |
+| `ULTIBIZ_TENANT_MODE` | optional: `database` activates the routing to the database of the tenant (`single` = the default, everything in one database) |
+| `ULTIBIZ_DB_ADMIN_USER` / `ULTIBIZ_DB_ADMIN_PASSWORD` | the administrator of MariaDB (creates the database of a tenant); the default is `root` / `MARIADB_ROOT_PASSWORD` |
+| `SPRING_PROFILES_ACTIVE=sso` | activates the single sign-on (with Keycloak) — see `docs/SSO.md` |
+| `ULTIBIZ_SSO_ISSUER` / `ULTIBIZ_SSO_CLIENT_ID` / `ULTIBIZ_SSO_CLIENT_SECRET` | the identity provider (only with the profile `sso`) |
+| `ULTIBIZ_SSO_AUTO_PROVISION` / `ULTIBIZ_SSO_ORGANIZATION` / `ULTIBIZ_SSO_ROLE` / `ULTIBIZ_SSO_ADMIN_ROLES` | the provisioning of a user that does not exist yet |
 
 A new value is written to `.env` (mode 600) and the service is restarted. Never
 write a secret in the git repository, in a log or in a ticket.
@@ -95,6 +100,26 @@ write a secret in the git repository, in a log or in a ticket.
 The **e-mail settings** are the exception: they live in the database (the secrets
 sealed with `ULTIBIZ_AI_ENCRYPTION_KEY`) and are changed by the administrator in
 the interface — the environment variables are only the fallback.
+
+## The tenants (one database per organisation)
+
+```bash
+# the mode stays "single" (one database) until a tenant database is ready
+grep ULTIBIZ_TENANT_MODE /home/sufehmi/projects/ultibiz/.env
+
+# the database of a tenant is created in the interface: Admin -> Tenants
+# (the organisation code must exist in the control database)
+
+# the databases that exist (the password travels in the environment, not in the
+# command line)
+set -a && . /home/sufehmi/projects/ultibiz/.env && set +a
+docker exec -e MYSQL_PWD="$MARIADB_ROOT_PASSWORD" ultibiz-mariadb mariadb -uroot \
+  -e "SHOW DATABASES LIKE 'ultibiz%';"
+```
+
+The identity (the organisations, the users, the roles) stays in the control
+database; the business data of a tenant lives in its own database. Details:
+`docs/MULTI-TENANT.md`.
 
 ## When something is wrong
 

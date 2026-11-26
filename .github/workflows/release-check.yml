@@ -40,3 +40,5 @@ jobs:
           -Dultibiz.it.jdbcUrl=jdbc:mariadb://127.0.0.1:3311/ultibiz_test
           -Dultibiz.it.user=ultibiz
           -Dultibiz.it.password=ci
+          -Dultibiz.it.adminUser=root
+          -Dultibiz.it.adminPassword=ci-root

@@ -22,6 +22,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class HomeController {
 
+    private final org.springframework.beans.factory.ObjectProvider<
+            org.springframework.security.oauth2.client.registration.ClientRegistrationRepository>
+            clientRegistrations;
+
     private static final ZoneId APP_ZONE = ZoneId.of("Asia/Jakarta");
     private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -39,12 +43,16 @@ public class HomeController {
     public HomeController(OrganizationService organizations, SiteService sites,
                           UserService users, AuditService audit,
                           SiteScopeProvider scopeProvider,
+                          org.springframework.beans.factory.ObjectProvider<
+                                  org.springframework.security.oauth2.client.registration
+                                          .ClientRegistrationRepository> clientRegistrations,
                           @Value("${info.app.version:dev}") String appVersion) {
         this.organizations = organizations;
         this.sites = sites;
         this.users = users;
         this.audit = audit;
         this.scopeProvider = scopeProvider;
+        this.clientRegistrations = clientRegistrations;
         this.appVersion = appVersion;
     }
 
@@ -72,7 +80,9 @@ public class HomeController {
     }
 
     @GetMapping("/login")
-    public String login() {
+    public String login(Model model) {
+        // the single sign-on link only appears when a client registration exists
+        model.addAttribute("ssoEnabled", clientRegistrations.getIfAvailable() != null);
         return "login";
     }
 
