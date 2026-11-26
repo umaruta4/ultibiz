@@ -1,4 +1,4 @@
-# The release notes — P8
+# The release notes — P8 (with the P10 additions)
 
 ## The six plugins
 
@@ -23,6 +23,15 @@ retention policies, the demo project and the demo ticket).
 None in the API of the existing modules. The new pages are new routes:
 `/hr`, `/projects`, `/crm`, `/dashboard`, `/knowledge`, `/helpdesk` and the
 public `/portal/{token}`.
+
+## The P10 additions
+
+- The reports now support the format `PDF` (a real PDF file, not the print-ready HTML).
+- The report delivery supports **SMTP e-mail** (an attachment per subscriber) next to the
+  webhook: set `ULTIBIZ_SMTP_HOST`, `ULTIBIZ_SMTP_PORT`, `ULTIBIZ_SMTP_USER`,
+  `ULTIBIZ_SMTP_PASSWORD`, `ULTIBIZ_SMTP_FROM`.
+- The CI pipeline (`.github/workflows/release-check.yml`) runs the release check on every push.
+- The report values are XML-escaped (a value with `&`, `<`, `>` no longer breaks the report).
 
 ## The upgrade notes
 

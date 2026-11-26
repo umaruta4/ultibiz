@@ -1,0 +1,42 @@
+name: The release check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.8
+        ports:
+          - 3311:3306
+        env:
+          MARIADB_ROOT_PASSWORD: ci-root
+          MARIADB_DATABASE: ultibiz_test
+          MARIADB_USER: ultibiz
+          MARIADB_PASSWORD: ci
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up the JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: The i18n audit
+        run: bash tools/i18n-audit.sh
+
+      - name: The build with the tests
+        run: >-
+          mvn -B verify
+          -Dultibiz.it.jdbcUrl=jdbc:mariadb://127.0.0.1:3311/ultibiz_test
+          -Dultibiz.it.user=ultibiz
+          -Dultibiz.it.password=ci

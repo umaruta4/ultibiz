@@ -21,10 +21,12 @@ public class ReportScheduler {
     private static final String LOCK = "ultibiz-report-run";
 
     private final DashboardService dashboard;
+    private final ReportMailer mailer;
     private final DataSource dataSource;
 
-    public ReportScheduler(DashboardService dashboard, DataSource dataSource) {
+    public ReportScheduler(DashboardService dashboard, ReportMailer mailer, DataSource dataSource) {
         this.dashboard = dashboard;
+        this.mailer = mailer;
         this.dataSource = dataSource;
     }
 
@@ -39,6 +41,9 @@ public class ReportScheduler {
                 var files = dashboard.runDueReports();
                 if (!files.isEmpty()) {
                     LOG.info("The report scheduler generated {} file(s)", files.size());
+                    for (var file : files) {
+                        mailer.send(file, dashboard.subscriptionEmail(file.subscriptionId()));
+                    }
                 }
             } finally {
                 unlock(connection);

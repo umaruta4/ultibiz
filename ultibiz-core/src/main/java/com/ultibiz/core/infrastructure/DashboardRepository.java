@@ -166,6 +166,12 @@ public class DashboardRepository {
                 """, Timestamp.valueOf(nextRun), status, subscriptionId);
     }
 
+    /** The e-mail of a subscription (the delivery address of the report). */
+    public String subscriptionEmail(long subscriptionId) {
+        return jdbc.queryForObject("SELECT email FROM dash_report_subscription WHERE id = ?",
+                String.class, subscriptionId);
+    }
+
     // ------------------------------------------------------------------ report files
 
     public long addReportFile(long organizationId, Long subscriptionId, String reportCode,

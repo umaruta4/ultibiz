@@ -233,6 +233,11 @@ public class DashboardService {
         return dashboards.subscriptions(scope.organizationId(), userId);
     }
 
+    /** The e-mail of a subscription (the delivery address of the report). */
+    public String subscriptionEmail(long subscriptionId) {
+        return dashboards.subscriptionEmail(subscriptionId);
+    }
+
     public List<DashboardRepository.ReportFile> reportFiles(SiteScope scope, long userId) {
         return dashboards.reportFiles(scope.organizationId(), userId);
     }
@@ -266,13 +271,22 @@ public class DashboardService {
         String period = LocalDate.now().toString();
         List<Map<String, Object>> rows = dashboards.reportRows(subscription.organizationId(),
                 subscription.reportCode());
-        String body = "CSV".equals(subscription.format())
-                ? toCsv(rows) : toHtml(subscription.title(), period, rows);
-        String extension = "CSV".equals(subscription.format()) ? "csv" : "html";
+        String format = subscription.format() == null ? "CSV" : subscription.format();
+        String body = "CSV".equals(format)
+                ? toCsv(rows) : toXhtml(subscription.title(), period, rows);
+        String extension = switch (format) {
+            case "CSV" -> "csv";
+            case "PDF" -> "pdf";
+            default -> "html";
+        };
         String fileName = subscription.reportCode() + "-" + period + "." + extension;
         Path path = reportDirectory.resolve(fileName);
         try {
-            Files.writeString(path, body, StandardCharsets.UTF_8);
+            if ("PDF".equals(format)) {
+                Files.write(path, toPdf(subscription.title(), period, rows));
+            } else {
+                Files.writeString(path, body, StandardCharsets.UTF_8);
+            }
         } catch (IOException ex) {
             throw new DashboardException("The report could not be written: " + ex.getMessage());
         }
@@ -318,6 +332,57 @@ public class DashboardService {
         }
     }
 
+    /** The rows as a PDF (the XHTML report, rendered headless). */
+    public static byte[] toPdf(String title, String period, List<Map<String, Object>> rows) {
+        String xhtml = toXhtml(title, period, rows);
+        try (java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream()) {
+            org.xhtmlrenderer.pdf.ITextRenderer renderer = new org.xhtmlrenderer.pdf.ITextRenderer();
+            renderer.setDocumentFromString(xhtml);
+            renderer.layout();
+            renderer.createPDF(out);
+            return out.toByteArray();
+        } catch (Exception ex) {
+            throw new DashboardException("The PDF could not be rendered: " + ex.getMessage());
+        }
+    }
+
+    /** The report as XHTML (well-formed, every value escaped). */
+    public static String toXhtml(String title, String period, List<Map<String, Object>> rows) {
+        StringBuilder html = new StringBuilder();
+        html.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+                .append("<!DOCTYPE html>\n")
+                .append("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><title>")
+                .append(escape(title)).append("</title><style>")
+                .append("body{font-family:sans-serif;margin:24px}")
+                .append("table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;")
+                .append("padding:4px 8px;font-size:12px}th{background:#f3f4f6}")
+                .append("</style></head><body>")
+                .append("<h1>").append(escape(title)).append("</h1><p>Period: ")
+                .append(escape(period)).append("</p>");
+        if (!rows.isEmpty()) {
+            List<String> columns = new ArrayList<>(rows.get(0).keySet());
+            html.append("<table><thead><tr>");
+            columns.forEach(column -> html.append("<th>").append(escape(column)).append("</th>"));
+            html.append("</tr></thead><tbody>");
+            for (Map<String, Object> row : rows) {
+                html.append("<tr>");
+                columns.forEach(column -> html.append("<td>")
+                        .append(escape(row.get(column) == null ? "" : row.get(column)))
+                        .append("</td>"));
+                html.append("</tr>");
+            }
+            html.append("</tbody></table>");
+        }
+        html.append("</body></html>");
+        return html.toString();
+    }
+
+    /** Escapes a value for the HTML/XHTML report. */
+    public static String escape(Object value) {
+        return value.toString().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\"", "&quot;");
+    }
+
     /** The rows as CSV. */
     static String toCsv(List<Map<String, Object>> rows) {
         if (rows.isEmpty()) {
@@ -339,22 +404,24 @@ public class DashboardService {
     }
 
     /** The rows as a print-ready HTML page (the browser can save it as PDF). */
-    static String toHtml(String title, String period, List<Map<String, Object>> rows) {
+    public static String toHtml(String title, String period, List<Map<String, Object>> rows) {
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>")
-                .append(title).append("</title><style>body{font-family:sans-serif;margin:24px}")
+                .append(escape(title)).append("</title><style>body{font-family:sans-serif;margin:24px}")
                 .append("table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;")
                 .append("padding:4px 8px;font-size:12px}th{background:#f3f4f6}</style></head><body>")
-                .append("<h1>").append(title).append("</h1><p>Period: ").append(period).append("</p>");
+                .append("<h1>").append(escape(title)).append("</h1><p>Period: ")
+                .append(escape(period)).append("</p>");
         if (!rows.isEmpty()) {
             List<String> columns = new ArrayList<>(rows.get(0).keySet());
             html.append("<table><thead><tr>");
-            columns.forEach(column -> html.append("<th>").append(column).append("</th>"));
+            columns.forEach(column -> html.append("<th>").append(escape(column)).append("</th>"));
             html.append("</tr></thead><tbody>");
             for (Map<String, Object> row : rows) {
                 html.append("<tr>");
                 columns.forEach(column -> html.append("<td>")
-                        .append(row.get(column) == null ? "" : row.get(column)).append("</td>"));
+                        .append(escape(row.get(column) == null ? "" : row.get(column)))
+                        .append("</td>"));
                 html.append("</tr>");
             }
             html.append("</tbody></table>");

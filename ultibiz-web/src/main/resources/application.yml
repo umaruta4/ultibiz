@@ -15,6 +15,19 @@ spring:
     validate-migration-naming: true
   jooq:
     sql-dialect: MARIADB
+  # the SMTP relay for the report delivery (inactive without a host)
+  mail:
+    host: ${ULTIBIZ_SMTP_HOST:}
+    port: ${ULTIBIZ_SMTP_PORT:587}
+    username: ${ULTIBIZ_SMTP_USER:}
+    password: ${ULTIBIZ_SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          timeout: 10000
   session:
     store-type: jdbc
     timeout: 8h
@@ -50,6 +63,9 @@ ultibiz:
     # shared secret the partners send in the X-Exchange-Secret header
     webhook-secret: ${ULTIBIZ_EXCHANGE_WEBHOOK_SECRET:}
     retry-delay-ms: ${ULTIBIZ_EXCHANGE_RETRY_DELAY_MS:60000}
+  mail:
+    # the sender address of the report e-mail
+    from: ${ULTIBIZ_SMTP_FROM:ultibiz@localhost}
   rate-limit:
     # the public endpoints (customer portal, inbound webhook) are limited
     requests: ${ULTIBIZ_RATE_LIMIT_REQUESTS:60}

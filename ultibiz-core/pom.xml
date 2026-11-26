@@ -58,5 +58,11 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- renders the reports to PDF (XHTML -> PDF, headless) -->
+    <dependency>
+      <groupId>org.xhtmlrenderer</groupId>
+      <artifactId>flying-saucer-pdf-openpdf</artifactId>
+      <version>9.4.0</version>
+    </dependency>
   </dependencies>
 </project>
