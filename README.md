@@ -43,6 +43,18 @@ Node/npm/bundler). Runs at root context (`/`).
 
 Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 
+## What P7 delivers
+
+**AI assistant.** The assistant lives in a drawer on every screen (header button or Ctrl/⌘K), answers questions about the data with citations, and can prepare write actions — a human always confirms them.
+
+- **Provider gateway with SPI**: OpenAI-compatible servers (OpenAI, llama.cpp, vLLM, Ollama, any new-api style gateway), Anthropic and a local Echo provider, behind one `AiGateway` with timeouts, retries and a circuit breaker. When the provider is down the assistant degrades gracefully; the ERP never does.
+- **Per-organisation configuration** (`/ai/usage`): provider, base URL, model, temperature, timeouts and an *allow external providers* switch that is **off by default** — data stays on the chosen endpoint. API keys are stored AES-encrypted (`ULTIBIZ_AI_ENCRYPTION_KEY`); without the key no key can be saved.
+- **PII redaction** before anything leaves the box (country-aware rules: e-mail, phone numbers, Indonesian NPWP).
+- **Tools**: read tools (`find_invoices`, `find_bills`) run inline and are logged; the write tool (`draft_journal`) returns a **proposal with a diff** (`/ai/actions/propose`) that only posts through the regular `JournalService` after a human confirms it (`/ai/actions/{id}/confirm`). Every prompt, answer and tool call is stored with model, token usage and latency, and the audit trail carries the AI conversation id.
+- **Insight engine**: a scheduler (DB-lock guarded, so one instance at a time) runs rule providers — negative stock, below-safety-stock, overdue AR — and files alerts with evidence, confidence and a suggested action (`/ai/insights`, manual run via POST `/ai/insights/run`).
+- **RAG knowledge base**: a knowledge vault (`knowledge_document` / `knowledge_chunk`) is chunked and embedded (768-dim hashing encoder with character trigrams); retrieval is hybrid — MariaDB `FULLTEXT` plus cosine distance — and answers cite the documents. A question without a match is answered honestly ("not found in the knowledge base").
+- **Note on MariaDB 11.8**: the build on Ubuntu 24.04 ships the `VECTOR` type but not the vector functions, so the native HNSW index is deferred (documented in the migration); the retrieval runs on the text copy of the embedding and the fulltext index, which keeps the whole feature portable.
+
 ## What P6 delivers
 
 - **Offline-first client** (`static/js/sync.js`): a dependency-free IndexedDB

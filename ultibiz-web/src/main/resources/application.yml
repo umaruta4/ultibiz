@@ -46,14 +46,12 @@ info:
 ultibiz:
   admin:
     password: ${ULTIBIZ_ADMIN_PASSWORD:}
+  exchange:
+    # shared secret the partners send in the X-Exchange-Secret header
+    webhook-secret: ${ULTIBIZ_EXCHANGE_WEBHOOK_SECRET:}
+    retry-delay-ms: ${ULTIBIZ_EXCHANGE_RETRY_DELAY_MS:60000}
 
 logging:
   level:
     root: info
     com.ultibiz: info
-
-ultibiz:
-  exchange:
-    # shared secret the partners send in the X-Exchange-Secret header
-    webhook-secret: ${ULTIBIZ_EXCHANGE_WEBHOOK_SECRET:}
-    retry-delay-ms: ${ULTIBIZ_EXCHANGE_RETRY_DELAY_MS:60000}

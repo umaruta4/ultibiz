@@ -252,3 +252,52 @@ body {
 .ub-nav-toggle[aria-expanded="true"] .ub-chevron {
   transform: rotate(90deg);
 }
+
+/* The assistant drawer: the chat, the citations and the proposed actions */
+.ub-ai-drawer {
+  width: min(28rem, 100vw);
+}
+.ub-ai-log {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  font-size: .875rem;
+}
+.ub-ai-message {
+  border: 1px solid var(--ub-border, #dee2e6);
+  border-radius: .5rem;
+  padding: .5rem .625rem;
+}
+.ub-ai-user {
+  background: rgba(13, 110, 253, .07);
+}
+.ub-ai-role {
+  font-size: .7rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  opacity: .65;
+  margin-bottom: .15rem;
+}
+.ub-ai-degraded {
+  border-color: #dc3545;
+}
+.ub-ai-citations {
+  border: 1px dashed var(--ub-border, #dee2e6);
+  border-radius: .5rem;
+  padding: .5rem .625rem;
+}
+.ub-ai-citation-link {
+  font-size: .7rem;
+  margin-left: .35rem;
+}
+.ub-ai-proposal {
+  border: 1px solid #f0ad4e;
+  border-radius: .5rem;
+  padding: .5rem .625rem;
+}
+.ub-ai-diff {
+  font-size: .75rem;
+  margin: 0;
+  white-space: pre-wrap;
+}
