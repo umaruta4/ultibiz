@@ -62,11 +62,18 @@ public class SsoProvisioningService {
         Long roleId = repository.roleIdByCode(organizationId, policy.defaultRoleCode());
         if (roleId != null) {
             repository.assignRole(userId, roleId);
+        } else {
+            LOG.warn("The SSO user {} was created, but the role {} does not exist: the user has"
+                    + " no permission. Set ULTIBIZ_SSO_ROLE to a role of the base scheme.",
+                    username, policy.defaultRoleCode());
         }
         if (policy.isAdministrator(claims)) {
             Long adminRole = repository.globalRoleIdByCode("ADMIN");
             if (adminRole != null) {
                 repository.assignRole(userId, adminRole);
+            } else {
+                LOG.warn("The SSO user {} has an administrator role of the provider, but the local"
+                        + " ADMIN role does not exist", username);
             }
         }
         repository.assignAllSites(userId, organizationId);

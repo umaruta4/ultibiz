@@ -76,3 +76,22 @@
   data-source configuration only shows up there).
 
 **208 core + 5 web tests green**, the i18n audit passes.
+
+
+## The result of the deployment (2026-11-27)
+
+* The release gate is green, the WAR is deployed, the login page and the
+  administration of the tenants are reachable.
+* The migration `V202611250017__p13_tenants.sql` is applied, the registry
+  contains `ACME → ultibiz → ACTIVE`.
+* The single sign-on was tested **live** (see `docs/SSO.md`), including the
+  provisioning with the role `USER`.
+* **The health endpoint is UP again.** The cause of the old DOWN was the
+  indicator of the mail server: `spring.mail.host` was always defined (empty
+  when no relay is configured), so a mail sender without a server was created
+  and the indicator failed. The relay of the environment now lives in
+  `ultibiz.mail.smtp.*` (the report mailer builds its own session — the
+  application never used the mail sender of Spring Boot).
+* The health endpoint shows the details (the name of a failed indicator) to
+  the administrators (`show-details: when_authorized`); the anonymous client
+  only sees the status.

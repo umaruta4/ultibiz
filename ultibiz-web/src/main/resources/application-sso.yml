@@ -27,8 +27,10 @@ ultibiz:
   sso:
     # a user that does not exist yet may be created on the first login
     auto-provision: ${ULTIBIZ_SSO_AUTO_PROVISION:true}
-    # the organisation and the role of a new user
+    # the organisation and the role of a new user (the roles of the base
+    # scheme are ADMIN and USER — a role that does not exist is reported in
+    # the log, the user then logs in without any permission)
     default-organization: ${ULTIBIZ_SSO_ORGANIZATION:ACME}
-    default-role: ${ULTIBIZ_SSO_ROLE:VIEWER}
+    default-role: ${ULTIBIZ_SSO_ROLE:USER}
     # the roles of the identity provider that make an administrator
     admin-roles: ${ULTIBIZ_SSO_ADMIN_ROLES:ultibiz-admin,admin}

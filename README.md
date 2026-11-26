@@ -22,7 +22,7 @@ Node/npm/bundler). Runs at root context (`/`).
 | **P9** | Hardening & release: rate limit, backup + restore drill, release gate, runbook, security notes | **done** |
 | **P10** | Native PDF reports, the report e-mail (SMTP + API provider), the CI pipeline | **done** |
 | **P11** | The e-mail settings in the administration interface (sealed secrets, test e-mail) | **done** |
-| **P12** | SSO / OpenID Connect with Keycloak: auto-provisioning, role mapping, OIDC logout, fallback login form | **done** (code — the live handshake needs a Keycloak instance) |
+| **P12** | SSO / OpenID Connect with Keycloak: auto-provisioning, role mapping, OIDC logout, fallback login form | **done** (the flow was tested end to end against a real Keycloak) |
 | **P13** | Multi-tenant on the database level: the tenant registry, the routing connection, the provisioning of a tenant database | **done** (the mode `single` stays the default) |
 
 ## What P2b delivers

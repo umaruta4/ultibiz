@@ -40,10 +40,10 @@ public class ReportMailer {
     private final boolean environmentSmtp;
 
     public ReportMailer(EmailSettingsService settingsService,
-                        @Value("${spring.mail.host:}") String smtpHost,
-                        @Value("${spring.mail.port:587}") int smtpPort,
-                        @Value("${spring.mail.username:}") String smtpUser,
-                        @Value("${spring.mail.password:}") String smtpPassword,
+                        @Value("${ultibiz.mail.smtp.host:}") String smtpHost,
+                        @Value("${ultibiz.mail.smtp.port:587}") int smtpPort,
+                        @Value("${ultibiz.mail.smtp.user:}") String smtpUser,
+                        @Value("${ultibiz.mail.smtp.password:}") String smtpPassword,
                         @Value("${ultibiz.mail.from:ultibiz@localhost}") String from,
                         @Value("${ultibiz.mail.provider:}") String provider,
                         @Value("${ultibiz.mail.mandrill.api-key:}") String mandrillKey,

@@ -77,6 +77,17 @@ class FormParser(HTMLParser):
                 self.fields[name] = attributes.get("value", "")
 
 
+def relax_secure_cookies(jar):
+    """Keycloak 26 marks the session cookie as *secure* — the provider lives
+    behind https in the real setup (a browser would send the cookie there).
+    This test speaks http on 127.0.0.1, so the flag is removed here; without
+    it the provider answers 400 ("invalid request") because it does not find
+    its own session cookie."""
+    for cookie in jar:
+        if cookie.secure:
+            cookie.secure = False
+
+
 def request(opener, url, data=None, headers=None):
     """One request without following the redirects; returns (status, headers, body)."""
     body = urllib.parse.urlencode(data).encode() if data else None
@@ -120,18 +131,27 @@ def main():
         print("FAIL: no login form at the provider")
         return 1
     print("ok: the provider shows its login form")
+    relax_secure_cookies(jar)
 
     # 3. the credentials
     fields = dict(parser.fields)
     fields["username"] = user
     fields["password"] = password
-    status, headers, _ = request(client, parser.action, data=fields)
+    print("  the cookies before the login: %s"
+          % ", ".join("%s(%s%s)" % (c.name, c.domain, c.path) for c in jar))
+    status, headers, body = request(client, parser.action, data=fields)
     location = headers.get("Location", "")
     if "/login/oauth2/code/keycloak" not in location:
         print("FAIL: the provider did not send the code back (status %s, %s)"
               % (status, location[:160]))
+        print("  the form action: %s" % parser.action)
+        print("  the posted fields: %s" % ", ".join(sorted(fields)))
+        text = re.sub(r"<[^>]+>", " ", body)
+        text = re.sub(r"\s+", " ", text).strip()
+        print("  the provider said: %s" % text[:500])
         return 1
     print("ok: the provider sent the authorization code back")
+    relax_secure_cookies(jar)
 
     # 4. the callback of the application: the local session takes over
     status, headers, _ = request(client, location)

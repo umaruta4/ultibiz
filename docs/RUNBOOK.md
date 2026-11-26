@@ -131,3 +131,30 @@ database; the business data of a tenant lives in its own database. Details:
 | A report is missing | `/home/sufehmi/ultibiz-reports` and the scheduler log | run the report by hand ("Run now") |
 | A ticket is not escalated | the SLA scheduler log | the `sla_resolve_due` of the ticket |
 | The database is slow | `docker stats ultibiz-mariadb` | the slow query log of the container |
+
+
+## The health endpoint
+
+`/actuator/health` is public and shows the status. The **details** (the name
+of the failed indicator) are only for the administrators: log in and call it
+with the session cookie, or call a single indicator
+(`/actuator/health/liveness`, `/actuator/health/readiness`).
+
+A `DOWN` without a reason in the application log is usually one of the
+standard indicators: `db` (the connection), `diskSpace`, `ssl` (the
+certificates) or `mail`. The indicator of the mail server only exists when a
+mail sender is configured — the application does **not** configure one (the
+report mailer builds its own SMTP session), so a `mail` indicator means that
+`spring.mail.host` was set somewhere (a variable `SPRING_MAIL_HOST` in the
+environment of the service).
+
+## The single sign-on and the provider
+
+The provider (Keycloak) is a container on the deploy host:
+`bash deploy/keycloak/start-keycloak.sh` (start), `... status`, `... stop`.
+It listens on 127.0.0.1:8180 and is therefore only reachable from the host
+itself. The SSO in the application is switched on with
+`SPRING_PROFILES_ACTIVE=sso` in the `.env` of the service — without that line
+the application runs with the form login only. The public URL of the provider
+(a hostname that the reverse proxy forwards to 8180) is still open: the
+session cookie of Keycloak is *secure*, so the provider has to speak https.

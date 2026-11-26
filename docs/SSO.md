@@ -58,6 +58,17 @@ bash deploy/keycloak/start-keycloak.sh status   # the container and the discover
 bash deploy/keycloak/start-keycloak.sh stop     # stop and remove the container
 ```
 
+**HTTPS is required.** Keycloak 26 marks the session cookie of the login
+(`AUTH_SESSION_ID`) as *secure*: a browser does not send it over plain http
+and the login dies with "invalid request" (HTTP 400). The provider therefore
+has to be reachable over https in front of real users. The end-to-end test
+removes the flag for its own http requests on 127.0.0.1.
+
+**The role of a new user.** The base scheme knows the roles `ADMIN` and
+`USER`; the default of the provisioning is `USER`
+(`ULTIBIZ_SSO_ROLE`). A role code that does not exist is reported as a
+warning in the log — the user is created but has no permission.
+
 **The public address of the provider.** The listener on 127.0.0.1 is enough
 for a test on the deploy host itself. For a real user the issuer must be a URL
 the browser of that user can reach (for example
@@ -108,3 +119,23 @@ provider-specific setting, and the claims are the standard ones.
 - The `sso` profile must be active **before** the first SSO user is expected:
   without the profile the login page has no SSO link and the OAuth2 endpoints
   do not exist.
+
+
+## What was verified on the deploy host (2026-11-27)
+
+* the provider `quay.io/keycloak/keycloak:26.0.7` on 127.0.0.1:8180, the realm
+  imported with a generated client secret and a generated password of the demo
+  user,
+* the login page shows **Sign in with Keycloak** with the profile `sso`,
+* the authorization code flow: the application redirects to the provider, the
+  provider sends the code back, the application accepts it and opens the
+  **local** session (`PASS` of `tools/sso-smoke-test.py`),
+* the provisioning: the user `budi` is created in the organisation `ACME`
+  (id 1) with the role **USER** and the access to 2 sites,
+* the second login reuses the local row,
+* the profile is switched off again: the application runs with the form login
+  (the provider is not reachable from the outside, so the SSO is not enabled in
+  production yet — see "the public address of the provider").
+
+The demo user of the provider is a test artifact; it can be removed from the
+database when the SSO is not used.

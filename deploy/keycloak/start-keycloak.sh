@@ -85,17 +85,26 @@ docker run -d --name "${CONTAINER}" \
   "${IMAGE}" start-dev --import-realm >/dev/null
 
 echo "the Keycloak container is starting (the import takes a moment)..."
+ready=no
 for i in $(seq 1 60); do
   if curl -s -o /dev/null -m 3 "${ISSUER}/.well-known/openid-configuration"; then
+    ready=yes
     break
   fi
   sleep 3
 done
+if [ "${ready}" != "yes" ]; then
+  echo "the provider did not come up; the last lines of the container:" >&2
+  docker logs --tail 15 "${CONTAINER}" >&2 || true
+  exit 1
+fi
 
 set_env ULTIBIZ_SSO_ISSUER "${ISSUER}"
 set_env ULTIBIZ_SSO_CLIENT_ID ultibiz
 set_env ULTIBIZ_SSO_CLIENT_SECRET "${CLIENT_SECRET}"
 set_env ULTIBIZ_SSO_REDIRECT_URI "http://10.10.70.12:18080/login/oauth2/code/keycloak"
+set_env ULTIBIZ_SSO_ROLE USER
+set_env ULTIBIZ_SSO_ORGANIZATION ACME
 set_env ULTIBIZ_SSO_TEST_PASSWORD "${USER_PASSWORD}"
 set_env KEYCLOAK_ADMIN_PASSWORD "${ADMIN_PASSWORD}"
 
