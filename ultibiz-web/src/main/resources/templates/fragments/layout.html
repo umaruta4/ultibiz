@@ -188,7 +188,18 @@
             <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/projects}" th:text="#{prj.projects}">Projects</a></li>
           </ul>
         </li>
-        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.crm}">CRM</a></li>
+        <li class="nav-item ub-nav-group">
+          <button class="nav-link ub-nav-toggle" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#nav-crm" aria-expanded="false" aria-controls="nav-crm">
+            <span th:text="#{nav.crm}">CRM</span>
+            <span class="ub-chevron" aria-hidden="true">&#9656;</span>
+          </button>
+          <ul class="nav flex-column collapse" id="nav-crm">
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/crm}" th:text="#{crm.board}">CRM board</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/crm/leads}" th:text="#{crm.leads}">Leads</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/crm/opportunities}" th:text="#{crm.opportunities}">Opportunities</a></li>
+          </ul>
+        </li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.knowledge}">Knowledge</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.helpdesk}">Helpdesk</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.admin}">Admin</a></li>

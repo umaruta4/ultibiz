@@ -43,7 +43,7 @@ Node/npm/bundler). Runs at root context (`/`).
 
 Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 
-## What P8 delivers (plugins 1–2 of 6: HRM, Projects)
+## What P8 delivers (plugins 1–3 of 6: HRM, Projects, CRM)
 
 **Projects.** Delivery work with real money behind it:
 
@@ -54,7 +54,25 @@ Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 - **Cost & revenue tracking**: the approved HRM timesheets of the project code become the labour cost at the contractual hourly rate (base / (weekly hours × 4.348125)); billable hours at the billing rate plus invoiced milestones become the revenue; the report shows hours, cost, revenue, profitability and budget usage per project and per employee.
 - One end-to-end IT: timesheet approved in HRM → project cost → milestone invoiced → journal posted → profitability.
 
+**CRM.** The commercial side, from a stranger to a signed order:
+
+- **Leads** with company, contact, source (manual / web / referral / campaign), territory and campaign; a lead qualifies only with a way to reach it, and converts only from QUALIFIED.
+- **Conversion** creates the customer in the master data (`CUST-<lead code>`) and opens an opportunity at the first pipeline stage — no duplicate customer data.
+- **Pipeline** (NEW → QUALIFIED → PROPOSAL → NEGOTIATION → WON / LOST) with a probability per stage: the pipeline never moves backwards, a lost deal needs a reason, a won deal needs an amount. The board shows the weighted value (amount × probability).
+- **Quote hand-off to Sales**: an open opportunity with an amount becomes a real **draft sales order** with one line at the opportunity value — Sales confirms, delivers and invoices it from there; the opportunity carries the order id and refuses a second hand-off.
+- **Activities** (call / meeting / e-mail / task) per lead, opportunity or contact, with due dates and completion; **campaigns** and **territories** for the campaigns and the market split.
+- One end-to-end IT: lead → qualify → convert (party + opportunity) → pipeline rules → hand-off (real sales order) → won → activities.
+
 **HRM.** The people side of the company, end to end:
+
+**CRM.** The commercial side, from a stranger to a signed order:
+
+- **Leads** with company, contact, source (manual / web / referral / campaign), territory and campaign; a lead qualifies only with a way to reach it, and converts only from QUALIFIED.
+- **Conversion** creates the customer in the master data (`CUST-<lead code>`) and opens an opportunity at the first pipeline stage — no duplicate customer data.
+- **Pipeline** (NEW → QUALIFIED → PROPOSAL → NEGOTIATION → WON / LOST) with a probability per stage: the pipeline never moves backwards, a lost deal needs a reason, a won deal needs an amount. The board shows the weighted value (amount × probability).
+- **Quote hand-off to Sales**: an open opportunity with an amount becomes a real **draft sales order** with one line at the opportunity value — Sales confirms, delivers and invoices it from there; the opportunity carries the order id and refuses a second hand-off.
+- **Activities** (call / meeting / e-mail / task) per lead, opportunity or contact, with due dates and completion; **campaigns** and **territories** for the campaigns and the market split.
+- One end-to-end IT: lead → qualify → convert (party + opportunity) → pipeline rules → hand-off (real sales order) → won → activities.
 
 **HRM.** The people side of the company, end to end:
 

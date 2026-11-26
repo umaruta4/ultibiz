@@ -57,7 +57,7 @@ public class ProjectService {
                 currency == null || currency.isBlank() ? "IDR" : currency,
                 billingRate == null ? BigDecimal.ZERO : billingRate);
         audit.record(AuditEvent.of(scope.organizationId(), actor, "PRJ_PROJECT_CREATE",
-                "prj_project", String.valueOf(id), null, "{\"code\":\"" + code + "\"}"));
+                "prj_project", String.valueOf(id), "{\"code\":\"" + code + "\"}", null));
         return id;
     }
 
@@ -68,7 +68,7 @@ public class ProjectService {
         long id = projects.addWbs(scope.organizationId(), projectId, code, name, parentId,
                 budgetHours == null ? BigDecimal.ZERO : budgetHours);
         audit.record(AuditEvent.of(scope.organizationId(), actor, "PRJ_WBS_ADD",
-                "prj_wbs", String.valueOf(id), null, "{\"code\":\"" + code + "\"}"));
+                "prj_wbs", String.valueOf(id), "{\"code\":\"" + code + "\"}", null));
         return id;
     }
 
@@ -77,7 +77,7 @@ public class ProjectService {
         project(scope, projectId);
         projects.updateProjectStatus(scope.organizationId(), projectId, status);
         audit.record(AuditEvent.of(scope.organizationId(), actor, "PRJ_PROJECT_STATUS",
-                "prj_project", String.valueOf(projectId), null, "{\"status\":\"" + status + "\"}"));
+                "prj_project", String.valueOf(projectId), "{\"status\":\"" + status + "\"}", null));
     }
 
     // ------------------------------------------------------------------ milestones
@@ -90,7 +90,7 @@ public class ProjectService {
         long id = projects.addMilestone(scope.organizationId(), projectId, code, name, dueDate,
                 amount);
         audit.record(AuditEvent.of(scope.organizationId(), actor, "PRJ_MILESTONE_ADD",
-                "prj_milestone", String.valueOf(id), null, "{\"code\":\"" + code + "\"}"));
+                "prj_milestone", String.valueOf(id), "{\"code\":\"" + code + "\"}", null));
         return id;
     }
 
@@ -132,8 +132,8 @@ public class ProjectService {
         var journal = journals.post(scope, actor, draft);
         projects.invoiceMilestone(scope.organizationId(), milestoneId, journal.id());
         audit.record(AuditEvent.of(scope.organizationId(), actor, "PRJ_MILESTONE_INVOICE",
-                "prj_milestone", String.valueOf(milestoneId), null,
-                "{\"journal\":\"" + journal.journalNumber() + "\"}"));
+                "prj_milestone", String.valueOf(milestoneId),
+                "{\"journal\":\"" + journal.journalNumber() + "\"}", null));
         return journal.id();
     }
 
@@ -159,8 +159,8 @@ public class ProjectService {
         long id = projects.assign(scope.organizationId(), projectId, employeeId,
                 role == null || role.isBlank() ? "Member" : role, hoursPerWeek, start, endDate);
         audit.record(AuditEvent.of(scope.organizationId(), actor, "PRJ_ASSIGN",
-                "prj_assignment", String.valueOf(id), null,
-                "{\"employeeId\":" + employeeId + ",\"hours\":" + hoursPerWeek + "}"));
+                "prj_assignment", String.valueOf(id),
+                "{\"employeeId\":" + employeeId + ",\"hours\":" + hoursPerWeek + "}", null));
         return id;
     }
 

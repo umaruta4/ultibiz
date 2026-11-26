@@ -46,7 +46,7 @@ public class HrmService {
                 firstName.trim(), lastName.trim(), personalEmail, phone, nationalId, birthDate,
                 hireDate == null ? LocalDate.now() : hireDate, null, null);
         audit.record(AuditEvent.of(scope.organizationId(), actor, "HR_EMPLOYEE_HIRE",
-                "hr_employee", String.valueOf(id), null, "{\"employeeNo\":\"" + employeeNo + "\"}"));
+                "hr_employee", String.valueOf(id), "{\"employeeNo\":\"" + employeeNo + "\"}", null));
         return id;
     }
 
@@ -68,8 +68,8 @@ public class HrmService {
         long id = hr.createLeaveRequest(scope.organizationId(), employeeId, type.id(),
                 startDate, endDate, days, reason);
         audit.record(AuditEvent.of(scope.organizationId(), actor, "HR_LEAVE_REQUEST",
-                "hr_leave_request", String.valueOf(id), null,
-                "{\"days\":" + days + ",\"type\":\"" + leaveTypeCode + "\"}"));
+                "hr_leave_request", String.valueOf(id),
+                "{\"days\":" + days + ",\"type\":\"" + leaveTypeCode + "\"}", null));
         return id;
     }
 
@@ -104,7 +104,7 @@ public class HrmService {
             throw new HrmException("A timesheet for this day and project already exists");
         }
         audit.record(AuditEvent.of(scope.organizationId(), actor, "HR_TIMESHEET_BOOK",
-                "hr_timesheet", String.valueOf(id), null, "{\"hours\":" + hours + "}"));
+                "hr_timesheet", String.valueOf(id), "{\"hours\":" + hours + "}", null));
         return id;
     }
 
@@ -131,7 +131,7 @@ public class HrmService {
                     receipts == null || receipts.size() <= i ? null : receipts.get(i));
         }
         audit.record(AuditEvent.of(scope.organizationId(), actor, "HR_EXPENSE_SUBMIT",
-                "hr_expense_claim", String.valueOf(id), null, "{\"total\":" + total + "}"));
+                "hr_expense_claim", String.valueOf(id), "{\"total\":" + total + "}", null));
         return id;
     }
 
@@ -161,7 +161,7 @@ public class HrmService {
                 incidentDate == null ? LocalDate.now() : incidentDate, category, severity,
                 description);
         audit.record(AuditEvent.of(scope.organizationId(), actor, "HR_INCIDENT_REGISTER",
-                "hr_incident", String.valueOf(id), null, "{\"severity\":\"" + severity + "\"}"));
+                "hr_incident", String.valueOf(id), "{\"severity\":\"" + severity + "\"}", null));
         return id;
     }
 
@@ -169,7 +169,7 @@ public class HrmService {
     public void updateIncidentStatus(SiteScope scope, String actor, long incidentId, String status) {
         hr.updateIncidentStatus(scope.organizationId(), incidentId, status);
         audit.record(AuditEvent.of(scope.organizationId(), actor, "HR_INCIDENT_STATUS",
-                "hr_incident", String.valueOf(incidentId), null, "{\"status\":\"" + status + "\"}"));
+                "hr_incident", String.valueOf(incidentId), "{\"status\":\"" + status + "\"}", null));
     }
 
     // ------------------------------------------------------------------ payroll
@@ -196,7 +196,7 @@ public class HrmService {
                     BigDecimal.ZERO, net, costCentreCode(employee));
         }
         audit.record(AuditEvent.of(scope.organizationId(), actor, "HR_PAYROLL_RUN",
-                "hr_payroll_run", String.valueOf(runId), null, "{\"period\":\"" + period + "\"}"));
+                "hr_payroll_run", String.valueOf(runId), "{\"period\":\"" + period + "\"}", null));
         return runId;
     }
 
@@ -220,7 +220,7 @@ public class HrmService {
         }
         hr.markExported(scope.organizationId(), run.id(), actor);
         audit.record(AuditEvent.of(scope.organizationId(), actor, "HR_PAYROLL_EXPORT",
-                "hr_payroll_run", String.valueOf(run.id()), null, "{\"period\":\"" + period + "\"}"));
+                "hr_payroll_run", String.valueOf(run.id()), "{\"period\":\"" + period + "\"}", null));
         return csv.toString();
     }
 

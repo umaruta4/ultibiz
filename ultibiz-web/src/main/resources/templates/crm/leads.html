@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{crm.leads}">CRM</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{crm.leads}">Leads</h1>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-lg-4">
+        <div class="ub-card">
+          <h2 class="fs-6 mb-2" th:text="#{crm.newLead}">New lead</h2>
+          <form method="post" th:action="@{/crm/leads}" class="vstack gap-2">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input class="form-control form-control-sm" name="code" th:placeholder="#{crm.code}" required>
+            <input class="form-control form-control-sm" name="company" th:placeholder="#{crm.company}" required>
+            <input class="form-control form-control-sm" name="contactName" th:placeholder="#{crm.contactName}">
+            <input class="form-control form-control-sm" name="email" type="email" th:placeholder="#{crm.email}">
+            <input class="form-control form-control-sm" name="phone" th:placeholder="#{crm.phone}">
+            <select class="form-select form-select-sm" name="source">
+              <option value="MANUAL">MANUAL</option>
+              <option value="WEB">WEB</option>
+              <option value="REFERRAL">REFERRAL</option>
+              <option value="CAMPAIGN">CAMPAIGN</option>
+            </select>
+            <select class="form-select form-select-sm" name="territoryId">
+              <option value="" th:text="#{crm.noTerritory}">No territory</option>
+              <option th:each="territory : ${territories}" th:value="${territory.id}"
+                      th:text="${territory.name}">Territory</option>
+            </select>
+            <select class="form-select form-select-sm" name="campaignId">
+              <option value="" th:text="#{crm.noCampaign}">No campaign</option>
+              <option th:each="campaign : ${campaigns}" th:value="${campaign.id}"
+                      th:text="${campaign.name}">Campaign</option>
+            </select>
+            <button class="btn btn-sm btn-primary" type="submit" th:text="#{crm.create}">Create</button>
+          </form>
+        </div>
+      </div>
+      <div class="col-12 col-lg-8">
+        <div class="ub-card">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th th:text="#{crm.code}">Code</th>
+                <th th:text="#{crm.company}">Company</th>
+                <th th:text="#{crm.contactName}">Contact</th>
+                <th th:text="#{crm.source}">Source</th>
+                <th th:text="#{crm.status}">Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="lead : ${leads}">
+                <td th:text="${lead.code}">LEAD</td>
+                <td th:text="${lead.company}">company</td>
+                <td th:text="${lead.contactName}">contact</td>
+                <td th:text="${lead.source}">source</td>
+                <td><span class="badge" th:classappend="${lead.status == 'CONVERTED'} ? 'text-bg-success' : (${lead.status == 'LOST'} ? 'text-bg-danger' : 'text-bg-warning')"
+                          th:text="${lead.status}">NEW</span></td>
+                <td class="text-end">
+                  <form th:if="${lead.status == 'NEW'}" method="post"
+                        th:action="@{/crm/leads/{id}/qualify(id=${lead.id})}" class="d-inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button class="btn btn-sm btn-outline-primary" type="submit" th:text="#{crm.qualify}">Qualify</button>
+                  </form>
+                  <form th:if="${lead.status == 'QUALIFIED'}" method="post"
+                        th:action="@{/crm/leads/{id}/convert(id=${lead.id})}" class="d-inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <input type="hidden" name="amount" value="0">
+                    <button class="btn btn-sm btn-success" type="submit" th:text="#{crm.convert}">Convert</button>
+                  </form>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </th:block>
+</body>
+</html>
