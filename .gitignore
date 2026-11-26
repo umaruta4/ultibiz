@@ -24,3 +24,7 @@ node_modules/
 prompts/
 docs/ULTIBIZ_MASTER_PROMPT.md
 docs/ULTIBIZ_PHASE_PROMPTS.md
+
+# the bytecode of the python tools
+__pycache__/
+*.pyc
