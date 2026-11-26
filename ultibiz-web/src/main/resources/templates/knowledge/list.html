@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{kv.title}">Knowledge</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{kv.title}">Knowledge vault</h1>
+      <form method="get" th:action="@{/knowledge}" class="d-flex gap-2">
+        <input class="form-control form-control-sm" name="q" th:value="${query}"
+               th:placeholder="#{kv.search}" style="min-width: 14rem">
+        <button class="btn btn-sm btn-outline-secondary" type="submit" th:text="#{kv.search}">Search</button>
+      </form>
+    </div>
+
+    <div th:if="${query != null and !query.isBlank()}" class="ub-card mb-3">
+      <h2 class="fs-6 mb-2" th:text="#{kv.results} + ' (' + ${#lists.size(results)} + ')'">Results</h2>
+      <ul class="list-unstyled small mb-0">
+        <li th:each="version : ${results}">
+          <a th:href="@{/knowledge/{id}(id=${version.documentId})}" th:text="${version.title}">title</a>
+          <span class="ub-muted" th:text="'v' + ${version.versionNo} + ' · ' + ${version.author}">v1</span>
+        </li>
+        <li th:if="${#lists.isEmpty(results)}" class="ub-muted" th:text="#{kv.noResults}">No results</li>
+      </ul>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-lg-4">
+        <div class="ub-card mb-3">
+          <h2 class="fs-6 mb-2" th:text="#{kv.newDocument}">New document</h2>
+          <form method="post" th:action="@{/knowledge}" class="vstack gap-2">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input class="form-control form-control-sm" name="code" th:placeholder="#{kv.code}" required>
+            <input class="form-control form-control-sm" name="title" th:placeholder="#{kv.documentTitle}" required>
+            <input class="form-control form-control-sm" name="source" th:placeholder="#{kv.source}">
+            <select class="form-select form-select-sm" name="folderId">
+              <option value="" th:text="#{kv.noFolder}">No folder</option>
+              <option th:each="folder : ${folders}" th:value="${folder.id}" th:text="${folder.name}">Folder</option>
+            </select>
+            <input class="form-control form-control-sm" name="tags" th:placeholder="#{kv.tags}">
+            <textarea class="form-control form-control-sm" name="content" rows="5" required
+                      th:placeholder="#{kv.content}"></textarea>
+            <button class="btn btn-sm btn-primary" type="submit" th:text="#{kv.create}">Create</button>
+          </form>
+        </div>
+
+        <div class="ub-card mb-3">
+          <h2 class="fs-6 mb-2" th:text="#{kv.folders}">Folders</h2>
+          <ul class="list-unstyled small mb-2">
+            <li th:each="folder : ${folders}">
+              <a th:href="@{/knowledge(folderId=${folder.id})}" th:text="${folder.name}">folder</a>
+              <span class="ub-muted" th:text="${folder.code}">code</span>
+            </li>
+          </ul>
+          <form method="post" th:action="@{/knowledge/folders}" class="vstack gap-2">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input class="form-control form-control-sm" name="code" th:placeholder="#{kv.code}" required>
+            <input class="form-control form-control-sm" name="name" th:placeholder="#{kv.name}" required>
+            <button class="btn btn-sm btn-outline-primary" type="submit" th:text="#{kv.addFolder}">Add</button>
+          </form>
+        </div>
+
+        <div class="ub-card">
+          <h2 class="fs-6 mb-2" th:text="#{kv.retention}">Retention</h2>
+          <ul class="list-unstyled small mb-2">
+            <li th:each="policy : ${policies}">
+              <span th:text="${policy.name}">policy</span>
+              <span class="ub-muted" th:text="${policy.retainMonths} + ' months · ' + ${policy.action}">0 months</span>
+            </li>
+          </ul>
+          <form method="post" th:action="@{/knowledge/retention/run}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button class="btn btn-sm btn-outline-secondary" type="submit" th:text="#{kv.runRetention}">Run retention</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-8">
+        <div class="ub-card">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th th:text="#{kv.code}">Code</th>
+                <th th:text="#{kv.documentTitle}">Title</th>
+                <th th:text="#{kv.version}">Version</th>
+                <th th:text="#{kv.legalHold}">Legal hold</th>
+                <th th:text="#{kv.tags}">Tags</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="document : ${documents}">
+                <td th:text="${document.code}">code</td>
+                <td><a th:href="@{/knowledge/{id}(id=${document.id})}" th:text="${document.title}">title</a></td>
+                <td th:text="'v' + ${document.currentVersion}">v1</td>
+                <td>
+                  <span class="badge" th:classappend="${document.legalHold} ? 'text-bg-danger' : 'text-bg-light border'"
+                        th:text="${document.legalHold} ? #{kv.hold} : '—'">—</span>
+                </td>
+                <td class="small" th:text="${document.archivedAt != null} ? #{kv.archived} : ''">—</td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(documents)}">
+                <td colspan="5" class="ub-muted" th:text="#{kv.noDocuments}">No documents</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </th:block>
+</body>
+</html>

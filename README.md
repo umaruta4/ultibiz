@@ -43,7 +43,7 @@ Node/npm/bundler). Runs at root context (`/`).
 
 Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 
-## What P8 delivers (plugins 1–4 of 6: HRM, Projects, CRM, Dashboard)
+## What P8 delivers (plugins 1–5 of 6: HRM, Projects, CRM, Dashboard, Knowledge Vault)
 
 **Projects.** Delivery work with real money behind it:
 
@@ -53,6 +53,15 @@ Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 - **Resource assignments** with a capacity rule: an employee is never allocated more than the weekly hours of their contract across overlapping assignments (the conflict is refused with the exact numbers).
 - **Cost & revenue tracking**: the approved HRM timesheets of the project code become the labour cost at the contractual hourly rate (base / (weekly hours × 4.348125)); billable hours at the billing rate plus invoiced milestones become the revenue; the report shows hours, cost, revenue, profitability and budget usage per project and per employee.
 - One end-to-end IT: timesheet approved in HRM → project cost → milestone invoiced → journal posted → profitability.
+
+**Knowledge Vault.** The company memory, with the rules of a real document store:
+
+- **Documents with versions**: every revision is kept (`kv_version`), the current version is the live one; a new version **re-indexes the RAG corpus** so the assistant cites the newest text.
+- **Folders** (a tree with no cycle, max 5 levels) and **tags**.
+- **Search**: MariaDB FULLTEXT over the versions (boolean mode, prefix terms) — an archived document leaves the search.
+- **Legal hold**: a document on hold is never touched by the retention run.
+- **Retention policies**: per folder or organisation, ARCHIVE or DELETE after N months; a scheduled/one-off run reports what it archived, deleted and kept.
+- One end-to-end IT: document → corpus chunking → new version → re-index → fulltext search → legal hold → retention run → archived document leaves the search.
 
 **Dashboard.** The cockpit, role-aware:
 
@@ -73,6 +82,15 @@ Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 - One end-to-end IT: lead → qualify → convert (party + opportunity) → pipeline rules → hand-off (real sales order) → won → activities.
 
 **HRM.** The people side of the company, end to end:
+
+**Knowledge Vault.** The company memory, with the rules of a real document store:
+
+- **Documents with versions**: every revision is kept (`kv_version`), the current version is the live one; a new version **re-indexes the RAG corpus** so the assistant cites the newest text.
+- **Folders** (a tree with no cycle, max 5 levels) and **tags**.
+- **Search**: MariaDB FULLTEXT over the versions (boolean mode, prefix terms) — an archived document leaves the search.
+- **Legal hold**: a document on hold is never touched by the retention run.
+- **Retention policies**: per folder or organisation, ARCHIVE or DELETE after N months; a scheduled/one-off run reports what it archived, deleted and kept.
+- One end-to-end IT: document → corpus chunking → new version → re-index → fulltext search → legal hold → retention run → archived document leaves the search.
 
 **Dashboard.** The cockpit, role-aware:
 
