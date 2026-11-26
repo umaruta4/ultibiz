@@ -80,7 +80,13 @@ job twice.
 | `MARIADB_ROOT_PASSWORD` | the database administrator (the drill) |
 | `ULTIBIZ_EXCHANGE_WEBHOOK_SECRET` | the inbound data-exchange webhook |
 | `ULTIBIZ_AI_ENCRYPTION_KEY` | encrypts the AI provider keys |
-| `ULTIBIZ_DASHBOARD_DELIVERY_WEBHOOK` | optional: the report delivery |
+| `ULTIBIZ_DASHBOARD_DELIVERY_WEBHOOK` | optional: the report delivery webhook |
+| `ULTIBIZ_EMAIL_PROVIDER` | optional: `mandrill`/`mailchimp`, `sendgrid`, `mailgun` or `webhook` (the report e-mail via an API provider instead of SMTP) |
+| `ULTIBIZ_MANDRILL_API_KEY` | the Mailchimp Transactional key (provider `mandrill`) |
+| `ULTIBIZ_SENDGRID_API_KEY` | the SendGrid key (provider `sendgrid`) |
+| `ULTIBIZ_MAILGUN_DOMAIN` / `ULTIBIZ_MAILGUN_API_KEY` | the Mailgun domain and key (provider `mailgun`); `ULTIBIZ_MAILGUN_REGION=eu` for the EU region |
+| `ULTIBIZ_EMAIL_WEBHOOK_URL` / `ULTIBIZ_EMAIL_WEBHOOK_SECRET` | the generic e-mail webhook (provider `webhook`) |
+| `ULTIBIZ_SMTP_HOST` / `ULTIBIZ_SMTP_USER` / `ULTIBIZ_SMTP_PASSWORD` / `ULTIBIZ_SMTP_FROM` | the SMTP relay (when no API provider is selected) |
 
 A new value is written to `.env` (mode 600) and the service is restarted. Never
 write a secret in the git repository, in a log or in a ticket.

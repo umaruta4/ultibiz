@@ -66,6 +66,19 @@ ultibiz:
   mail:
     # the sender address of the report e-mail
     from: ${ULTIBIZ_SMTP_FROM:ultibiz@localhost}
+    # an API provider instead of SMTP: mandrill | sendgrid | mailgun | webhook
+    provider: ${ULTIBIZ_EMAIL_PROVIDER:}
+    mandrill:
+      api-key: ${ULTIBIZ_MANDRILL_API_KEY:}
+    sendgrid:
+      api-key: ${ULTIBIZ_SENDGRID_API_KEY:}
+    mailgun:
+      domain: ${ULTIBIZ_MAILGUN_DOMAIN:}
+      api-key: ${ULTIBIZ_MAILGUN_API_KEY:}
+      region: ${ULTIBIZ_MAILGUN_REGION:us}
+    webhook:
+      url: ${ULTIBIZ_EMAIL_WEBHOOK_URL:}
+      secret: ${ULTIBIZ_EMAIL_WEBHOOK_SECRET:}
   rate-limit:
     # the public endpoints (customer portal, inbound webhook) are limited
     requests: ${ULTIBIZ_RATE_LIMIT_REQUESTS:60}

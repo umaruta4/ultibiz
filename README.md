@@ -46,7 +46,7 @@ Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 ## What P10 delivers
 
 - **Native PDF reports**: a scheduled report with the format `PDF` is rendered to a real PDF (Flying Saucer + OpenPDF, headless) — verified on production: `HEADCOUNT-2026-11-26.pdf` (PDF 1.5). The report values are **XML-escaped** (a value like `Research & <Development>` can no longer break the report — or inject HTML).
-- **E-mail delivery via SMTP**: the report scheduler mails the generated file to the subscriber as an attachment (Spring Mail, STARTTLS). Inactive until `ULTIBIZ_SMTP_HOST` etc. are set — the file and the webhook keep working without it.
+- **E-mail delivery via SMTP or an API provider**: the report scheduler mails the generated file to the subscriber as an attachment. The transport is picked with `ULTIBIZ_EMAIL_PROVIDER`: `mandrill`/`mailchimp` (Mailchimp Transactional), `sendgrid`, `mailgun` (with the `us`/`eu` region) or `webhook` (any provider — the message is posted as JSON with the attachment as base64 and an optional shared secret). Without a provider the SMTP relay is used (`ULTIBIZ_SMTP_HOST` etc.), and without both the mailer stays inactive — the file and the webhook keep working.
 - **CI pipeline**: `.github/workflows/release-check.yml` runs the i18n audit and `mvn -B verify` on every push/PR with a MariaDB 11.8 service container — the same gate as the release check.
 
 ## What P9 delivers (hardening & release)

@@ -27,9 +27,10 @@ public `/portal/{token}`.
 ## The P10 additions
 
 - The reports now support the format `PDF` (a real PDF file, not the print-ready HTML).
-- The report delivery supports **SMTP e-mail** (an attachment per subscriber) next to the
-  webhook: set `ULTIBIZ_SMTP_HOST`, `ULTIBIZ_SMTP_PORT`, `ULTIBIZ_SMTP_USER`,
-  `ULTIBIZ_SMTP_PASSWORD`, `ULTIBIZ_SMTP_FROM`.
+- The report delivery supports **e-mail** (an attachment per subscriber) next to the
+  webhook — via an API provider (`ULTIBIZ_EMAIL_PROVIDER`: `mandrill`/`mailchimp`,
+  `sendgrid`, `mailgun`, `webhook`) or via SMTP (`ULTIBIZ_SMTP_HOST`, `ULTIBIZ_SMTP_USER`,
+  `ULTIBIZ_SMTP_PASSWORD`, `ULTIBIZ_SMTP_FROM`).
 - The CI pipeline (`.github/workflows/release-check.yml`) runs the release check on every push.
 - The report values are XML-escaped (a value with `&`, `<`, `>` no longer breaks the report).
 
