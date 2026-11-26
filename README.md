@@ -43,7 +43,18 @@ Node/npm/bundler). Runs at root context (`/`).
 
 Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 
-## What P8 delivers (plugin 1 of 6: HRM)
+## What P8 delivers (plugins 1–2 of 6: HRM, Projects)
+
+**Projects.** Delivery work with real money behind it:
+
+- **Projects** with customer, manager, budget, currency and a billing rate per hour; statuses ACTIVE / ON_HOLD / CLOSED.
+- **WBS**: a tree per project with budgeted hours.
+- **Milestones**: billing events on the PENDING → REACHED → INVOICED flow. Invoicing a reached milestone **posts a real journal** (Dr Accounts Receivable / Cr Sales Revenue) through the regular posting engine — the milestone carries the journal id, and the books reflect the revenue immediately.
+- **Resource assignments** with a capacity rule: an employee is never allocated more than the weekly hours of their contract across overlapping assignments (the conflict is refused with the exact numbers).
+- **Cost & revenue tracking**: the approved HRM timesheets of the project code become the labour cost at the contractual hourly rate (base / (weekly hours × 4.348125)); billable hours at the billing rate plus invoiced milestones become the revenue; the report shows hours, cost, revenue, profitability and budget usage per project and per employee.
+- One end-to-end IT: timesheet approved in HRM → project cost → milestone invoiced → journal posted → profitability.
+
+**HRM.** The people side of the company, end to end:
 
 **HRM.** The people side of the company, end to end:
 

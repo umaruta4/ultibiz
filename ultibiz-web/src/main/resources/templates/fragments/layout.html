@@ -178,7 +178,16 @@
             <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/hr/payroll}" th:text="#{hr.payroll}">Payroll</a></li>
           </ul>
         </li>
-        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.projects}">Projects</a></li>
+        <li class="nav-item ub-nav-group">
+          <button class="nav-link ub-nav-toggle" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#nav-projects" aria-expanded="false" aria-controls="nav-projects">
+            <span th:text="#{nav.projects}">Projects</span>
+            <span class="ub-chevron" aria-hidden="true">&#9656;</span>
+          </button>
+          <ul class="nav flex-column collapse" id="nav-projects">
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/projects}" th:text="#{prj.projects}">Projects</a></li>
+          </ul>
+        </li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.crm}">CRM</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.knowledge}">Knowledge</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.helpdesk}">Helpdesk</a></li>

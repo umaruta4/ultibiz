@@ -283,6 +283,20 @@ public class HrmRepository {
                 """, actor, organizationId, timesheetId);
     }
 
+    /** One approved timesheet line of a project. */
+    public record ProjectHours(long employeeId, BigDecimal hours, boolean billable) {
+    }
+
+    /** The approved timesheet hours of one project (feeds the project costing). */
+    public List<ProjectHours> approvedProjectHours(long organizationId, String projectCode) {
+        return jdbc.query("""
+                SELECT employee_id, hours, billable FROM hr_timesheet
+                WHERE organization_id = ? AND project_code = ? AND status = 'APPROVED'
+                """, (rs, n) -> new ProjectHours(id(rs.getObject("employee_id")),
+                        rs.getBigDecimal("hours"), rs.getBoolean("billable")),
+                organizationId, projectCode);
+    }
+
     /** The approved hours of one employee in one month (feeds the payroll and the projects). */
     public BigDecimal approvedHours(long employeeId, String period) {
         BigDecimal hours = jdbc.queryForObject("""
