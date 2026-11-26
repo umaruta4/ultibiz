@@ -20,7 +20,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TEMPLATE="${ROOT}/deploy/keycloak/realm-ultibiz.json"
 RUNTIME_DIR=/var/lib/ultibiz-keycloak
 RUNTIME_REALM="${RUNTIME_DIR}/realm-ultibiz.json"
-ENV_FILE=/home/janedoe/projects/ultibiz/.env
+ENV_FILE="${ULTIBIZ_ENV_FILE:-${ROOT}/.env}"
+# the public URL of the deployment (the redirect URI of the provider)
+PUBLIC_URL="${ULTIBIZ_PUBLIC_URL:-https://erp.example.com}"
 CONTAINER=ultibiz-keycloak
 IMAGE=quay.io/keycloak/keycloak:26.0.7
 PORT=8180
@@ -66,8 +68,8 @@ USER_PASSWORD=$(grep '^ULTIBIZ_SSO_TEST_PASSWORD=' "${ENV_FILE}" 2>/dev/null | c
 sed -e "s|CHANGE-ME-GENERATE-A-SECRET|${CLIENT_SECRET}|" \
     -e "s|\"value\": \"CHANGE-ME\"|\"value\": \"${USER_PASSWORD}\"|" \
     -e "s|\"sslRequired\": \"external\"|\"sslRequired\": \"none\"|" \
-    -e "s|\"redirectUris\": \[\"https://erp.example.com/login/oauth2/code/keycloak\"\]|\"redirectUris\": [\"https://erp.example.com/login/oauth2/code/keycloak\", \"http://localhost:8080/login/oauth2/code/keycloak\", \"http://localhost:8080/login/oauth2/code/keycloak\"]|" \
-    -e "s|\"webOrigins\": \[\"https://erp.example.com\"\]|\"webOrigins\": [\"https://erp.example.com\", \"http://localhost:8080\"]|" \
+    -e "s|\"redirectUris\": \[\"https://erp.example.com/login/oauth2/code/keycloak\"\]|\"redirectUris\": [\"${PUBLIC_URL}/login/oauth2/code/keycloak\", \"http://localhost:8080/login/oauth2/code/keycloak\"]|" \
+    -e "s|\"webOrigins\": \[\"https://erp.example.com\"\]|\"webOrigins\": [\"${PUBLIC_URL}\", \"http://localhost:8080\"]|" \
     "${TEMPLATE}" > "${RUNTIME_REALM}"
 chmod 640 "${RUNTIME_REALM}"
 # the container runs as uid 1000 and must be able to read the realm

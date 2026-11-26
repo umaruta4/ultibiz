@@ -27,7 +27,8 @@ from html.parser import HTMLParser
 
 BASE = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8080"
 ISSUER = sys.argv[2] if len(sys.argv) > 2 else "http://localhost:8180/realms/ultibiz"
-ENV_FILE = os.environ.get("ULTIBIZ_ENV_FILE", "/home/janedoe/projects/ultibiz/.env")
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ENV_FILE = os.environ.get("ULTIBIZ_ENV_FILE", os.path.join(REPO_ROOT, ".env"))
 
 
 def env_values():
