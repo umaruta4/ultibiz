@@ -37,7 +37,7 @@ public `/portal/{token}`.
 ## The upgrade notes
 
 - The instance needs the `ULTIBIZ_REPORT_DIR` directory (the default is
-  `/home/sufehmi/ultibiz-reports`); the service creates it when it may.
+  `/home/janedoe/ultibiz-reports`); the service creates it when it may.
 - The rate limit protects the public endpoints; raise `ULTIBIZ_RATE_LIMIT_REQUESTS`
   when a partner sends more.
 - The report delivery is inactive until `ULTIBIZ_DASHBOARD_DELIVERY_WEBHOOK` is set.

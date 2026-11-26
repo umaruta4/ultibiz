@@ -66,7 +66,7 @@ downloaded as an error CSV.
 ## Tests
 
 ```bash
-mvn -B verify   -Dultibiz.it.jdbcUrl=jdbc:mariadb://127.0.0.1:3311/ultibiz_test   -Dultibiz.it.user=ultibiz -Dultibiz.it.password=...
+mvn -B verify   -Dultibiz.it.jdbcUrl=jdbc:mariadb://localhost:3311/ultibiz_test   -Dultibiz.it.user=ultibiz -Dultibiz.it.password=...
 ```
 
 Integration tests (skipped without the URL) cover: site isolation, shared-row

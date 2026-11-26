@@ -3,9 +3,11 @@ package com.ultibiz.web.web;
 import com.ultibiz.core.application.ExchangeService;
 import com.ultibiz.core.application.SiteScope;
 import com.ultibiz.core.exchange.ExchangeMessage;
+import com.ultibiz.core.settings.SystemSettingsService;
 import com.ultibiz.web.security.SiteScopeProvider;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,11 +32,27 @@ public class ExchangeApiController {
     private final SiteScopeProvider scopeProvider;
     private final String webhookSecret;
 
+    /** The settings of the deployment: the secret can be changed at runtime. */
+    @Autowired(required = false)
+    private SystemSettingsService settings;
+
     public ExchangeApiController(ExchangeService exchange, SiteScopeProvider scopeProvider,
                                  @Value("${ultibiz.exchange.webhook-secret:}") String webhookSecret) {
         this.exchange = exchange;
         this.scopeProvider = scopeProvider;
         this.webhookSecret = webhookSecret == null ? "" : webhookSecret.trim();
+    }
+
+    /** The shared secret of the exchange: the setting of the deployment wins. */
+    private String effectiveSecret() {
+        if (settings == null) {
+            return webhookSecret;
+        }
+        String configured = settings.value("exchange.webhook.secret");
+        if (configured == null || configured.isBlank()) {
+            return webhookSecret;
+        }
+        return configured.trim();
     }
 
     /**
@@ -48,13 +66,14 @@ public class ExchangeApiController {
             @RequestHeader(value = "X-Idempotency-Key", required = false) String idempotencyKey,
             @RequestHeader(value = "X-Exchange-Secret", required = false) String secret,
             @RequestBody(required = false) String payload) {
-        if (webhookSecret.isEmpty()) {
+        String expected = effectiveSecret();
+        if (expected.isEmpty()) {
             // closed by default: without a configured secret no partner may push
             Map<String, Object> refused = new LinkedHashMap<>();
             refused.put("error", "The inbound webhook is not configured");
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(refused);
         }
-        if (!webhookSecret.equals(secret)) {
+        if (!expected.equals(secret)) {
             Map<String, Object> refused = new LinkedHashMap<>();
             refused.put("error", "Invalid webhook secret");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(refused);

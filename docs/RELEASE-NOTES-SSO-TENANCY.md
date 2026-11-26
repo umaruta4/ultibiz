@@ -25,7 +25,7 @@
   `ultibiz`, the client `ultibiz`, the roles `ultibiz-admin`/`ultibiz-user`,
   the protocol mappers, the demo user) with a placeholder secret.
 * `deploy/keycloak/start-keycloak.sh` — starts the provider on
-  `127.0.0.1:8180` with a generated client secret and a generated password of
+  `localhost:8180` with a generated client secret and a generated password of
   the demo user; both go to the `.env` of the service.
 * `tools/sso-smoke-test.py` — the end-to-end test of the flow (the
   authorization code, the login form of the provider, the callback, the local

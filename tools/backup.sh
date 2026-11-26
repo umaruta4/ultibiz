@@ -10,7 +10,7 @@ mkdir -p "${TARGET}"
 DB_NAME="${ULTIBIZ_DB_NAME:-ultibiz}"
 DB_USER="${ULTIBIZ_DB_USER:-ultibiz}"
 DB_PASSWORD="${ULTIBIZ_DB_PASSWORD:?the database password is required}"
-DB_HOST="${ULTIBIZ_DB_HOST:-127.0.0.1}"
+DB_HOST="${ULTIBIZ_DB_HOST:-localhost}"
 DB_PORT="${ULTIBIZ_DB_PORT:-3311}"
 
 echo "-- the database dump"
@@ -19,8 +19,8 @@ docker exec ultibiz-mariadb mariadb-dump -u "${DB_USER}" -p"${DB_PASSWORD}" \
   "${DB_NAME}" | gzip > "${TARGET}/ultibiz-${STAMP}.sql.gz"
 
 echo "-- the report files"
-if [ -d "${ULTIBIZ_REPORT_DIR:-/home/sufehmi/ultibiz-reports}" ]; then
-  tar czf "${TARGET}/reports-${STAMP}.tar.gz" -C "${ULTIBIZ_REPORT_DIR:-/home/sufehmi/ultibiz-reports}" .
+if [ -d "${ULTIBIZ_REPORT_DIR:-/home/janedoe/ultibiz-reports}" ]; then
+  tar czf "${TARGET}/reports-${STAMP}.tar.gz" -C "${ULTIBIZ_REPORT_DIR:-/home/janedoe/ultibiz-reports}" .
 fi
 
 # keep the last 14 backups

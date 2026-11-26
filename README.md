@@ -11,11 +11,37 @@ Node/npm/bundler) · runs at the root context (`/`).
 
 | | |
 |---|---|
-| Production | `https://ultibiz.ahadmart.com` (Tomcat 11 on `server1.ahadmart.com`, MariaDB container) |
-| Tests | 208 core + 5 web, green on every release |
-| Schema | 17 Flyway migrations, applied in order, never edited afterwards |
+| Tests | 206 core + 9 web, green on every release |
+| Schema | 19 Flyway migrations, applied in order, never edited afterwards |
 | Identity | local login (RBAC + site scope) or OpenID Connect (Keycloak) |
 | Tenancy | one database per organisation (opt-in), the control database holds the identity |
+
+---
+
+## The table of contents
+
+- [The modules](#the-modules)
+- [The architecture](#the-architecture)
+  - [The three Maven modules](#the-three-maven-modules)
+  - [The data model](#the-data-model)
+  - [The tenancy](#the-tenancy)
+  - [The security](#the-security)
+- [Getting started](#getting-started)
+- [The configuration](#the-configuration)
+- [The operation](#the-operation)
+  - [The deployment](#the-deployment)
+  - [The release gate](#the-release-gate)
+  - [The backup and the restore drill](#the-backup-and-the-restore-drill)
+  - [The health](#the-health)
+  - [The schedulers](#the-schedulers)
+  - [The single sign-on](#the-single-sign-on)
+  - [The tenants](#the-tenants)
+- [The development](#the-development)
+  - [The conventions](#the-conventions)
+  - [The test strategy](#the-test-strategy)
+  - [The directory map](#the-directory-map)
+- [The documentation](#the-documentation)
+- [The state and the next steps](#the-state-and-the-next-steps)
 
 ---
 
@@ -126,7 +152,7 @@ mvn -B verify
 
 # the integration tests against a real MariaDB (opt-in: they need a database)
 mvn -B verify \
-  -Dultibiz.it.jdbcUrl=jdbc:mariadb://127.0.0.1:3306/ultibiz_test \
+  -Dultibiz.it.jdbcUrl=jdbc:mariadb://localhost:3306/ultibiz_test \
   -Dultibiz.it.user=ultibiz -Dultibiz.it.password=... \
   -Dultibiz.it.adminUser=root -Dultibiz.it.adminPassword=...
 ```
@@ -148,29 +174,34 @@ cp .env.example .env && chmod 600 .env   # the template is in the repository
 
 ## The configuration
 
-Everything is an environment variable; nothing secret is in the repository.
-The values in the table are the defaults.
+**Every item is editable in the interface: Administration → System settings**
+(`/admin/settings/system`, the administrators only). The environment variable
+stays the fallback — a value changed in the interface wins until it is removed,
+and a value that is read at the start of the application takes effect after a
+restart (the interface marks those items).
 
-| Variable | Meaning |
-|---|---|
-| `ULTIBIZ_DB_HOST` / `ULTIBIZ_DB_PORT` / `ULTIBIZ_DB_NAME` / `ULTIBIZ_DB_USER` / `ULTIBIZ_DB_PASSWORD` | the application database (the default: the MariaDB container on 127.0.0.1:3311, the database `ultibiz`) |
-| `ULTIBIZ_DB_ADMIN_USER` / `ULTIBIZ_DB_ADMIN_PASSWORD` | the administrator of MariaDB — only for the provisioning of a tenant database |
-| `MARIADB_ROOT_PASSWORD` | the root account of MariaDB — the backup and the restore drill |
-| `ULTIBIZ_ADMIN_PASSWORD` | the password of the first administrator |
-| `ULTIBIZ_AI_ENCRYPTION_KEY` | the key under which the secrets are sealed (the AI keys, the e-mail secrets) — without it no secret can be saved |
-| `ULTIBIZ_TENANT_MODE` | `single` (the default) or `database` |
-| `SPRING_PROFILES_ACTIVE=sso` | switches the OpenID Connect login on |
-| `ULTIBIZ_SSO_ISSUER` / `ULTIBIZ_SSO_CLIENT_ID` / `ULTIBIZ_SSO_CLIENT_SECRET` / `ULTIBIZ_SSO_REDIRECT_URI` | the client of the identity provider |
-| `ULTIBIZ_SSO_AUTO_PROVISION` / `ULTIBIZ_SSO_ORGANIZATION` / `ULTIBIZ_SSO_ROLE` / `ULTIBIZ_SSO_ADMIN_ROLES` | the provisioning of the SSO user (the default role `USER`, the administrator roles `ultibiz-admin,admin`) |
-| `ULTIBIZ_EMAIL_PROVIDER` / `ULTIBIZ_SMTP_*` / `ULTIBIZ_MAILGUN_*` / `ULTIBIZ_EMAIL_WEBHOOK_*` | the **fallback** of the e-mail (`mandrill`, `sendgrid`, `mailgun`, `webhook`) — the transport of the interface wins |
-| `ULTIBIZ_RATE_LIMIT_REQUESTS` / `ULTIBIZ_RATE_LIMIT_WINDOW` | the rate limit of the public endpoints (the default: 60 requests per minute) |
-| `ULTIBIZ_REPORT_DIR` | where the scheduled reports are written (the default: `/home/sufehmi/ultibiz-reports`) |
-| `ULTIBIZ_DASHBOARD_DELIVERY_WEBHOOK` / `ULTIBIZ_EXCHANGE_WEBHOOK_SECRET` | the delivery of the reports and the shared secret of the inbound webhook |
+| The group | The items | The effect |
+|---|---|---|
+| **The database** | the host, the port, the name, the user, the password; the administrator of MariaDB for the provisioning | after a restart |
+| **The tenancy** | `single` or `database` (one database per organisation) | after a restart |
+| **The single sign-on** | the switch, the issuer, the client id/secret, the redirect URI, the automatic provisioning, the organisation, the role, the administrator roles | the switch and the client after a restart; the provisioning at runtime |
+| **The e-mail (the fallback)** | the transport, the SMTP relay, the sender address, the domain and the region of Mailgun, the webhook | at runtime; the transport of the organisation (E-mail settings) wins |
+| **The security** | the password of the first administrator, the key that seals the secrets, the shared secret of the exchange, the rate limit | the rate limit and the shared secret at runtime; the keys after a restart |
+| **The reports** | the directory of the scheduled reports, the delivery webhook | at runtime |
 
-The e-mail transport, the sender address and the credentials are configured by
-the administrator in **Administration → E-mail settings** (`/admin/settings/email`)
-— the environment variables stay the fallback for the installations without a
-configuration in the interface.
+The secrets (the passwords, the API keys, the secrets of the webhooks) are
+sealed with AES-GCM under the deployment key. They are **never** stored in
+clear text, never shown again and never sent back to the browser: the form only
+says whether a secret is set, an empty field keeps it and a ticked box removes
+it. When the sealing key is changed, the stored secrets are sealed again with
+the new key.
+
+The e-mail transport, the sender address and the credentials of an organisation
+stay in **Administration → E-mail settings** (`/admin/settings/email`) — the
+settings of the organisation win over the fallback of the deployment.
+
+The template of the environment file is in the repository (`.env.example`); the
+file itself is server-side only and is never committed.
 
 ---
 
@@ -185,13 +216,13 @@ One ssh invocation: backup the WAR, replace it, delete the exploded directory
 (a failed startup has to be able to roll back), restart, read the health.
 
 ```bash
-cd /home/sufehmi/projects/ultibiz
+cd /home/janedoe/projects/ultibiz
 JAVA_HOME=/opt/jdk-21 MAVEN_OPTS="-Xmx900m" bash tools/release-check.sh
-cp /home/sufehmi/tomcat-ultibiz/webapps/ROOT.war /home/sufehmi/tomcat-ultibiz/ROOT.war.bak
-cp ultibiz-web/target/ultibiz-web-*.war /home/sufehmi/tomcat-ultibiz/webapps/ROOT.war
-rm -rf /home/sufehmi/tomcat-ultibiz/webapps/ROOT
+cp /opt/tomcat/webapps/ROOT.war /opt/tomcat/ROOT.war.bak
+cp ultibiz-web/target/ultibiz-web-*.war /opt/tomcat/webapps/ROOT.war
+rm -rf /opt/tomcat/webapps/ROOT
 systemctl restart ultibiz-tomcat
-curl -s http://10.10.70.12:18080/actuator/health        # {"status":"UP"}
+curl -s http://localhost:8080/actuator/health        # {"status":"UP"}
 ```
 
 **Never** sync the tree without `--exclude '.env'` — a `rsync --delete` without
@@ -233,7 +264,7 @@ bash deploy/keycloak/start-keycloak.sh status
 bash deploy/keycloak/start-keycloak.sh stop
 ```
 
-It listens on `127.0.0.1:8180`. For real users the provider has to be reachable
+It listens on `localhost:8180`. For real users the provider has to be reachable
 over **https** (Keycloak 26 marks the session cookie as *secure*), so the
 reverse proxy has to forward a public hostname to it — that forwarding lives
 outside this repository. The end-to-end test drives the whole flow:
@@ -282,8 +313,8 @@ ultibiz-web/src/main/resources/
 ultibiz-core/src/main/resources/db/migration/
   V202611250001__ultibiz_baseline.sql   the organisation, the site, the user,
                                          the RBAC, the audit, Spring Session
-  V202611250002__p1_master_data.sql     the master data, the country/tax
-                                         configuration, the numbering
+  V202611250018__system_settings.sql    the configuration of the deployment,
+                                         edited by the administrator
   …                                     one script per slice, in order
 deploy/                 the Dockerfile, the compose file, the k8s manifests,
                         the keycloak realm + the start script
@@ -304,9 +335,9 @@ docs/                   the guides and the ADRs
 | [`docs/SECURITY.md`](docs/SECURITY.md) | what protects the application and where the limits are |
 | [`docs/SSO.md`](docs/SSO.md) | the single sign-on: the flow, the provisioning, the provider |
 | [`docs/MULTI-TENANT.md`](docs/MULTI-TENANT.md) | one database per organisation: the control database, the routing, the provisioning |
-| [`docs/P1-MASTER-DATA.md`](docs/P1-MASTER-DATA.md) | the master data, the multi-site, the numbering |
-| [`docs/P2-ACCOUNTING.md`](docs/P2-ACCOUNTING.md) | the posting engine, the periods, the taxes, the currency |
-| [`docs/RELEASE-NOTES-P8.md`](docs/RELEASE-NOTES-P8.md) · [`docs/RELEASE-NOTES-P12-P13.md`](docs/RELEASE-NOTES-P12-P13.md) | what the plugins, the SSO and the multi-tenant brought |
+| [`docs/MASTER-DATA.md`](docs/MASTER-DATA.md) | the master data, the multi-site, the numbering |
+| [`docs/ACCOUNTING.md`](docs/ACCOUNTING.md) | the posting engine, the periods, the taxes, the currency |
+| [`docs/RELEASE-NOTES-PLUGINS.md`](docs/RELEASE-NOTES-PLUGINS.md) · [`docs/RELEASE-NOTES-SSO-TENANCY.md`](docs/RELEASE-NOTES-SSO-TENANCY.md) | what the plugins, the SSO and the multi-tenant brought |
 | [`docs/adr/`](docs/adr/) | ADR-001 (the decisions of the foundation), ADR-002 (the scoping and the numbering), ADR-003 (the posting engine) — read them before changing the rules |
 
 ## The state and the next steps

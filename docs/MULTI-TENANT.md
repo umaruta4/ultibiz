@@ -47,7 +47,7 @@ application user may not create a database:
 |----------|-------------|
 | `ULTIBIZ_DB_ADMIN_USER` | the administrator (default `root`) |
 | `ULTIBIZ_DB_ADMIN_PASSWORD` | its password (default `MARIADB_ROOT_PASSWORD`) |
-| `ULTIBIZ_DB_HOST`, `ULTIBIZ_DB_PORT` | the server (default `127.0.0.1:3311`) |
+| `ULTIBIZ_DB_HOST`, `ULTIBIZ_DB_PORT` | the server (default `localhost:3311`) |
 | `ULTIBIZ_DB_NAME`, `ULTIBIZ_DB_USER`, `ULTIBIZ_DB_PASSWORD` | the control database and the application user |
 
 ## Suspension

@@ -46,7 +46,7 @@ The public endpoints are limited per IP address and per path:
 
 ## The secrets
 
-The secrets live in `.env` (mode 600, owner sufehmi) on the server; they are
+The secrets live in `.env` (mode 600, owner janedoe) on the server; they are
 never in the git repository. The AI provider keys are encrypted at rest with
 `ULTIBIZ_AI_ENCRYPTION_KEY` (AES).
 

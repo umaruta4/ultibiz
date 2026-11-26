@@ -25,9 +25,9 @@ import urllib.parse
 import urllib.request
 from html.parser import HTMLParser
 
-BASE = sys.argv[1] if len(sys.argv) > 1 else "http://10.10.70.12:18080"
-ISSUER = sys.argv[2] if len(sys.argv) > 2 else "http://127.0.0.1:8180/realms/ultibiz"
-ENV_FILE = os.environ.get("ULTIBIZ_ENV_FILE", "/home/sufehmi/projects/ultibiz/.env")
+BASE = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8080"
+ISSUER = sys.argv[2] if len(sys.argv) > 2 else "http://localhost:8180/realms/ultibiz"
+ENV_FILE = os.environ.get("ULTIBIZ_ENV_FILE", "/home/janedoe/projects/ultibiz/.env")
 
 
 def env_values():
@@ -80,7 +80,7 @@ class FormParser(HTMLParser):
 def relax_secure_cookies(jar):
     """Keycloak 26 marks the session cookie as *secure* — the provider lives
     behind https in the real setup (a browser would send the cookie there).
-    This test speaks http on 127.0.0.1, so the flag is removed here; without
+    This test speaks http on localhost, so the flag is removed here; without
     it the provider answers 400 ("invalid request") because it does not find
     its own session cookie."""
     for cookie in jar:

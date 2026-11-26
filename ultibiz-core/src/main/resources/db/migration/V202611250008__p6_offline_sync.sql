@@ -112,5 +112,5 @@ INSERT INTO ub_sync_entity (organization_id, entity, entity_id, data, row_versio
         1, 'seed', 'system'),
     (@org, 'stock_count', 'SC-2026-11-JKT1', '{"warehouse":"JKT1","counted_quantity":"0"}',
         1, 'seed', 'system'),
-    (@org, 'timesheet', 'TS-2026-11-SUFEHMI', '{"employee":"SUFEHMI","hours":"0","date":"2026-11-01"}',
+    (@org, 'timesheet', 'TS-2026-11-JANEDOE', '{"employee":"JANEDOE","hours":"0","date":"2026-11-01"}',
         1, 'seed', 'system');

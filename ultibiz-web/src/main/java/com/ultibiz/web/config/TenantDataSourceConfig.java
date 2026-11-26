@@ -43,7 +43,7 @@ public class TenantDataSourceConfig {
     DataSource dataSource(
             @Qualifier("controlDataSource") HikariDataSource control,
             @Value("${ultibiz.tenant.mode:single}") String mode,
-            @Value("${ultibiz.tenant.admin-host:${ULTIBIZ_DB_HOST:127.0.0.1}}") String host,
+            @Value("${ultibiz.tenant.admin-host:${ULTIBIZ_DB_HOST:localhost}}") String host,
             @Value("${ultibiz.tenant.admin-port:${ULTIBIZ_DB_PORT:3311}}") String port,
             @Value("${ultibiz.tenant.application-user:${ULTIBIZ_DB_USER:ultibiz}}") String user,
             @Value("${ultibiz.tenant.application-password:${ULTIBIZ_DB_PASSWORD:}}") String password,

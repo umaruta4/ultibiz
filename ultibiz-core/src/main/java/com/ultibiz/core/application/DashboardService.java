@@ -7,6 +7,7 @@ import com.ultibiz.core.dashboard.ThresholdPolicy;
 import com.ultibiz.core.domain.AuditEvent;
 import com.ultibiz.core.infrastructure.AiRepository;
 import com.ultibiz.core.infrastructure.DashboardRepository;
+import com.ultibiz.core.settings.SystemSettingsService;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +43,10 @@ public class DashboardService {
     private final AuditService audit;
     private final Path reportDirectory;
     private final String deliveryWebhook;
+
+    /** The settings of the deployment: the directory and the webhook are read at runtime. */
+    @Autowired(required = false)
+    private SystemSettingsService settings;
 
     public DashboardService(DashboardRepository dashboards, InsightService insights,
                             AuditService audit,
@@ -285,7 +291,7 @@ public class DashboardService {
             default -> "html";
         };
         String fileName = subscription.reportCode() + "-" + period + "." + extension;
-        Path path = reportDirectory.resolve(fileName);
+        Path path = reportDirectory().resolve(fileName);
         try {
             if ("PDF".equals(format)) {
                 Files.write(path, toPdf(subscription.title(), period, rows));
@@ -297,8 +303,8 @@ public class DashboardService {
         }
         String delivery = "FILE_READY";
         String detail = "The report is ready for download";
-        if (!deliveryWebhook.isBlank()) {
-            delivery = deliver(subscription, path, fileName, detail);
+        if (!effectiveWebhook().isBlank()) {
+            delivery = deliver(subscription, path, fileName, detail, effectiveWebhook());
         }
         long id = dashboards.addReportFile(subscription.organizationId(), subscription.id(),
                 subscription.reportCode(), period, subscription.format(), fileName,
@@ -310,15 +316,39 @@ public class DashboardService {
                 .filter(file -> file.id() == id).findFirst().orElseThrow();
     }
 
+    /** The directory of the reports: the setting of the deployment wins. */
+    private Path reportDirectory() {
+        if (settings == null) {
+            return reportDirectory;
+        }
+        String configured = settings.value("report.dir");
+        if (configured == null || configured.isBlank()) {
+            return reportDirectory;
+        }
+        return Paths.get(configured.trim());
+    }
+
+    /** The webhook of the delivery: the setting of the deployment wins. */
+    private String effectiveWebhook() {
+        if (settings == null) {
+            return deliveryWebhook;
+        }
+        String configured = settings.value("dashboard.delivery.webhook");
+        if (configured == null || configured.isBlank()) {
+            return deliveryWebhook;
+        }
+        return configured.trim();
+    }
+
     /** Posts the report to the configured delivery webhook. */
     private String deliver(DashboardRepository.Subscription subscription, Path path,
-                           String fileName, String detail) {
+                           String fileName, String detail, String webhook) {
         try {
             String payload = "{\"report\":\"" + subscription.reportCode() + "\",\"file\":\""
                     + fileName + "\",\"email\":\"" + (subscription.email() == null ? ""
                     : subscription.email()) + "\"}";
             java.net.http.HttpRequest request = java.net.http.HttpRequest
-                    .newBuilder(java.net.URI.create(deliveryWebhook))
+                    .newBuilder(java.net.URI.create(webhook))
                     .header("Content-Type", "application/json")
                     .POST(java.net.http.HttpRequest.BodyPublishers.ofString(payload))
                     .build();

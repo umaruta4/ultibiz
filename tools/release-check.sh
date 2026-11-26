@@ -10,7 +10,7 @@ echo "-- the i18n audit"
 bash tools/i18n-audit.sh
 
 echo "-- the build with the tests (the integration tests need the test database)"
-: "${ULTIBIZ_IT_JDBC_URL:=jdbc:mariadb://127.0.0.1:3311/ultibiz_test}"
+: "${ULTIBIZ_IT_JDBC_URL:=jdbc:mariadb://localhost:3311/ultibiz_test}"
 : "${ULTIBIZ_IT_USER:=ultibiz}"
 : "${ULTIBIZ_IT_PASSWORD:=${ULTIBIZ_DB_PASSWORD:-}}"
 # the tenant test creates a real database — it needs the administrator of the

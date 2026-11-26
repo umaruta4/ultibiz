@@ -192,7 +192,7 @@ class AiIntegrationTest {
     @Test
     void anUnreachableProviderDegradesTheAssistantOnly() {
         AiProviderConfig before = ai.config(orgId);
-        ai.saveConfig(orgId, "OPENAI_COMPATIBLE", "http://127.0.0.1:9", "some-model", null,
+        ai.saveConfig(orgId, "OPENAI_COMPATIBLE", "http://localhost:9", "some-model", null,
                 0.2, 1500, 256, false, null);
         try {
             AiService.ChatResult result = assistant.chat(scope, "it", "admin",
@@ -209,7 +209,7 @@ class AiIntegrationTest {
     @Test
     void anExternalProviderIsRefusedWhenTheOrganisationSaysNo() {
         AiProviderConfig before = ai.config(orgId);
-        ai.saveConfig(orgId, "OPENAI_COMPATIBLE", "http://127.0.0.1:9", "some-model", null,
+        ai.saveConfig(orgId, "OPENAI_COMPATIBLE", "http://localhost:9", "some-model", null,
                 0.2, 1500, 256, false, null);
         try {
             AiService.ChatResult result = assistant.chat(scope, "it", "admin", "halo", "/", null,

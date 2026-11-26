@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-# UltiBiz infra install on server1.ahadmart.com — idempotent
+# UltiBiz infra install on server1.example.com — idempotent
 # - Maven 3.9.16 -> /opt/maven (+ /usr/local/bin/mvn)
 # - Temurin JDK 21 -> /opt/jdk-21 (apt on server1 is intentionally untouched)
 # - Tomcat 11.0.29 -> /opt/tomcat-11 (root-owned CATALINA_HOME)
-# - CATALINA_BASE -> /home/sufehmi/tomcat-ultibiz (sufehmi-owned), 10.10.70.12:18080
-# - MariaDB 11.8 container -> 127.0.0.1:3311, db/user ultibiz
+# - CATALINA_BASE -> /home/janedoe/tomcat-ultibiz (janedoe-owned), localhost:8080
+# - MariaDB 11.8 container -> localhost:3311, db/user ultibiz
 set -euo pipefail
 
 MVN_VER=3.9.16
 TC_VER=11.0.29
-TC_BASE=/home/sufehmi/tomcat-ultibiz
-DATA_DIR=/home/sufehmi/data/ultibiz-mariadb
-DB_ENV=/home/sufehmi/projects/ultibiz/.env
+TC_BASE=/home/janedoe/tomcat-ultibiz
+DATA_DIR=/home/janedoe/data/ultibiz-mariadb
+DB_ENV=/home/janedoe/projects/ultibiz/.env
 
 log(){ echo "[$(date '+%H:%M:%S')] $*"; }
 
@@ -60,7 +60,7 @@ chmod -R o+rX /opt/apache-tomcat-${TC_VER}
 chmod +x /opt/tomcat-11/bin/*.sh
 
 # ---------- CATALINA_BASE ----------
-install -d -o sufehmi -g sufehmi ${TC_BASE}/{bin,conf,lib,logs,temp,webapps,work}
+install -d -o janedoe -g janedoe ${TC_BASE}/{bin,conf,lib,logs,temp,webapps,work}
 if [ ! -f ${TC_BASE}/conf/server.xml ]; then
   cp -a /opt/tomcat-11/conf/. ${TC_BASE}/conf/
 fi
@@ -68,13 +68,13 @@ rm -rf ${TC_BASE}/webapps/ROOT ${TC_BASE}/webapps/docs ${TC_BASE}/webapps/exampl
 
 cat > ${TC_BASE}/conf/server.xml <<'XMLEOF'
 <?xml version="1.0" encoding="UTF-8"?>
-<Server port="18005" address="127.0.0.1" shutdown="SHUTDOWN">
+<Server port="18005" address="localhost" shutdown="SHUTDOWN">
   <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
   <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
   <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
   <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
   <Service name="Catalina">
-    <Connector port="18080" address="10.10.70.12" protocol="HTTP/1.1"
+    <Connector port="8080" address="0.0.0.0" protocol="HTTP/1.1"
                connectionTimeout="20000" maxThreads="150" minSpareThreads="10"
                enableLookups="false" compression="on" compressibleMimeType="text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json" />
     <Engine name="Catalina" defaultHost="localhost">
@@ -97,7 +97,7 @@ export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 export CATALINA_OPTS="-Xms96m -Xmx256m -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC -Djava.awt.headless=true -Dfile.encoding=UTF-8"
 ENVEOF
 chmod +x ${TC_BASE}/bin/setenv.sh
-chown -R sufehmi:sufehmi ${TC_BASE}
+chown -R janedoe:janedoe ${TC_BASE}
 
 # ---------- systemd unit ----------
 cat > /etc/systemd/system/ultibiz-tomcat.service <<'UNITEOF'
@@ -108,12 +108,12 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=sufehmi
-Group=sufehmi
+User=janedoe
+Group=janedoe
 Environment=JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 Environment=CATALINA_HOME=/opt/tomcat-11
-Environment=CATALINA_BASE=/home/sufehmi/tomcat-ultibiz
-EnvironmentFile=-/home/sufehmi/projects/ultibiz/.env
+Environment=CATALINA_BASE=/home/janedoe/tomcat-ultibiz
+EnvironmentFile=-/home/janedoe/projects/ultibiz/.env
 ExecStart=/opt/tomcat-11/bin/catalina.sh run
 Restart=on-failure
 RestartSec=5
@@ -126,12 +126,12 @@ UNITEOF
 systemctl daemon-reload
 
 # ---------- MariaDB 11.8 container ----------
-install -d -o sufehmi -g sufehmi $(dirname ${DATA_DIR}) ${DATA_DIR}
+install -d -o janedoe -g janedoe $(dirname ${DATA_DIR}) ${DATA_DIR}
 if [ ! -f ${DB_ENV} ]; then
   DB_ROOT_PW=$(openssl rand -hex 16)
   DB_APP_PW=$(openssl rand -hex 16)
   cat > ${DB_ENV} <<ENVEOF
-ULTIBIZ_DB_HOST=127.0.0.1
+ULTIBIZ_DB_HOST=localhost
 ULTIBIZ_DB_PORT=3311
 ULTIBIZ_DB_NAME=ultibiz
 ULTIBIZ_DB_USER=ultibiz
@@ -140,14 +140,14 @@ MARIADB_ROOT_PASSWORD=${DB_ROOT_PW}
 ULTIBIZ_ADMIN_PASSWORD=$(openssl rand -base64 12 | tr -d '=+/')
 ENVEOF
   chmod 600 ${DB_ENV}
-  chown sufehmi:sufehmi ${DB_ENV}
+  chown janedoe:janedoe ${DB_ENV}
 fi
 set -a; . ${DB_ENV}; set +a
 
 if ! docker ps -a --format '{{.Names}}' | grep -qx ultibiz-mariadb; then
   log "creating ultibiz-mariadb container (mariadb:11.8)"
   docker run -d --name ultibiz-mariadb --restart unless-stopped \
-    -p 127.0.0.1:3311:3306 \
+    -p localhost:3311:3306 \
     -v ${DATA_DIR}:/var/lib/mysql \
     -e MARIADB_ROOT_PASSWORD="${MARIADB_ROOT_PASSWORD}" \
     -e MARIADB_DATABASE=ultibiz \

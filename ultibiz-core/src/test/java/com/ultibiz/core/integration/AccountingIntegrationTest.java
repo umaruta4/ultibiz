@@ -49,7 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Integration tests for the posting engine against a real MariaDB.
  *
  * <pre>
- * mvn -B verify -Dultibiz.it.jdbcUrl=jdbc:mariadb://127.0.0.1:3311/ultibiz_test \
+ * mvn -B verify -Dultibiz.it.jdbcUrl=jdbc:mariadb://localhost:3311/ultibiz_test \
  *               -Dultibiz.it.user=ultibiz -Dultibiz.it.password=...
  * </pre>
  */

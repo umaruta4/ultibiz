@@ -1,33 +1,33 @@
 # The UltiBiz runbook
 
-The day-to-day operations of the production instance on `server1.ahadmart.com`.
+The day-to-day operations of the production instance on `server1.example.com`.
 
 ## The services
 
 | What | Where | How to check |
 | --- | --- | --- |
-| The application | Tomcat 11, `/home/sufehmi/tomcat-ultibiz`, systemd `ultibiz-tomcat` | `curl -s -o /dev/null -w "%{http_code}" http://10.10.70.12:18080/login` → 200 |
+| The application | Tomcat 11, `/home/janedoe/tomcat-ultibiz`, systemd `ultibiz-tomcat` | `curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/login` → 200 |
 | The database | MariaDB in Docker, container `ultibiz-mariadb`, port 3311 | `docker exec ultibiz-mariadb mariadb -u ultibiz -p"$ULTIBIZ_DB_PASSWORD" -e "SELECT 1;" ultibiz` |
-| The source | `/home/sufehmi/projects/ultibiz` (git, `main`) | `git -C /home/sufehmi/projects/ultibiz log --oneline -1` |
-| The secrets | `/home/sufehmi/projects/ultibiz/.env` (mode 600, owner sufehmi) | `stat -c "%a %U" /home/sufehmi/projects/ultibiz/.env` |
+| The source | `/home/janedoe/projects/ultibiz` (git, `main`) | `git -C /home/janedoe/projects/ultibiz log --oneline -1` |
+| The secrets | `/home/janedoe/projects/ultibiz/.env` (mode 600, owner janedoe) | `stat -c "%a %U" /home/janedoe/projects/ultibiz/.env` |
 | The e-mail settings | the interface: Administration → E-mail settings (`/admin/settings/email`) | `SELECT provider, from_address, is_active FROM email_provider_config;` |
-| The reports | `/home/sufehmi/ultibiz-reports` | `ls -lt /home/sufehmi/ultibiz-reports | head` |
+| The reports | `/home/janedoe/ultibiz-reports` | `ls -lt /home/janedoe/ultibiz-reports | head` |
 | The backups | `/var/backups/ultibiz` (the last 14 dumps) | `ls -lt /var/backups/ultibiz | head` |
 | The logs | `journalctl -u ultibiz-tomcat` | `journalctl -u ultibiz-tomcat --since "1 hour ago" | grep -i error` |
 
 ## The deploy
 
 ```bash
-cd /home/sufehmi/projects/ultibiz
+cd /home/janedoe/projects/ultibiz
 git pull --ff-only
 bash tools/release-check.sh          # the i18n audit + the build with the tests
-sudo -u sufehmi JAVA_HOME=/opt/jdk-21 MAVEN_OPTS="-Xmx900m" mvn -B -DskipTests package
+sudo -u janedoe JAVA_HOME=/opt/jdk-21 MAVEN_OPTS="-Xmx900m" mvn -B -DskipTests package
 # the WAR is deployed with the rollback copy in place
-cp /home/sufehmi/tomcat-ultibiz/webapps/ROOT.war /home/sufehmi/tomcat-ultibiz/ROOT.war.bak
+cp /home/janedoe/tomcat-ultibiz/webapps/ROOT.war /home/janedoe/tomcat-ultibiz/ROOT.war.bak
 systemctl stop ultibiz-tomcat
-rm -rf /home/sufehmi/tomcat-ultibiz/webapps/ROOT
-cp ultibiz-web/target/ultibiz-web-0.1.0-SNAPSHOT.war /home/sufehmi/tomcat-ultibiz/webapps/ROOT.war
-chown sufehmi:sufehmi /home/sufehmi/tomcat-ultibiz/webapps/ROOT.war
+rm -rf /home/janedoe/tomcat-ultibiz/webapps/ROOT
+cp ultibiz-web/target/ultibiz-web-0.1.0-SNAPSHOT.war /home/janedoe/tomcat-ultibiz/webapps/ROOT.war
+chown janedoe:janedoe /home/janedoe/tomcat-ultibiz/webapps/ROOT.war
 systemctl start ultibiz-tomcat
 ```
 
@@ -37,8 +37,8 @@ The migrations run automatically at the start (Flyway) — **always take a backu
 
 ```bash
 systemctl stop ultibiz-tomcat
-rm -rf /home/sufehmi/tomcat-ultibiz/webapps/ROOT
-cp /home/sufehmi/tomcat-ultibiz/ROOT.war.bak /home/sufehmi/tomcat-ultibiz/webapps/ROOT.war
+rm -rf /home/janedoe/tomcat-ultibiz/webapps/ROOT
+cp /home/janedoe/tomcat-ultibiz/ROOT.war.bak /home/janedoe/tomcat-ultibiz/webapps/ROOT.war
 systemctl start ultibiz-tomcat
 ```
 
@@ -50,7 +50,7 @@ migration (never edit an applied one).
 
 ```bash
 # the backup (as root, the docker socket belongs to root)
-cd /home/sufehmi/projects/ultibiz && set -a && . .env && set +a
+cd /home/janedoe/projects/ultibiz && set -a && . .env && set +a
 bash tools/backup.sh /var/backups/ultibiz
 
 # the drill: a backup is restored into a scratch database and the counts are compared
@@ -105,14 +105,14 @@ the interface — the environment variables are only the fallback.
 
 ```bash
 # the mode stays "single" (one database) until a tenant database is ready
-grep ULTIBIZ_TENANT_MODE /home/sufehmi/projects/ultibiz/.env
+grep ULTIBIZ_TENANT_MODE /home/janedoe/projects/ultibiz/.env
 
 # the database of a tenant is created in the interface: Admin -> Tenants
 # (the organisation code must exist in the control database)
 
 # the databases that exist (the password travels in the environment, not in the
 # command line)
-set -a && . /home/sufehmi/projects/ultibiz/.env && set +a
+set -a && . /home/janedoe/projects/ultibiz/.env && set +a
 docker exec -e MYSQL_PWD="$MARIADB_ROOT_PASSWORD" ultibiz-mariadb mariadb -uroot \
   -e "SHOW DATABASES LIKE 'ultibiz%';"
 ```
@@ -128,7 +128,7 @@ database; the business data of a tenant lives in its own database. Details:
 | The application does not answer | `systemctl status ultibiz-tomcat` | the log: `journalctl -u ultibiz-tomcat -n 200` |
 | The application answers 500 | the log (the Thymeleaf / SQL error) | the migration that failed: `flyway_schema_history` |
 | The login is broken | the session table in the database | restart the service |
-| A report is missing | `/home/sufehmi/ultibiz-reports` and the scheduler log | run the report by hand ("Run now") |
+| A report is missing | `/home/janedoe/ultibiz-reports` and the scheduler log | run the report by hand ("Run now") |
 | A ticket is not escalated | the SLA scheduler log | the `sla_resolve_due` of the ticket |
 | The database is slow | `docker stats ultibiz-mariadb` | the slow query log of the container |
 
@@ -152,7 +152,7 @@ environment of the service).
 
 The provider (Keycloak) is a container on the deploy host:
 `bash deploy/keycloak/start-keycloak.sh` (start), `... status`, `... stop`.
-It listens on 127.0.0.1:8180 and is therefore only reachable from the host
+It listens on localhost:8180 and is therefore only reachable from the host
 itself. The SSO in the application is switched on with
 `SPRING_PROFILES_ACTIVE=sso` in the `.env` of the service — without that line
 the application runs with the form login only. The public URL of the provider

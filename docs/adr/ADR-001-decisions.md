@@ -35,14 +35,15 @@ Resolves the open decisions from `docs/ULTIBIZ_MASTER_PROMPT.md` §20 that affec
 
 - **Decision:** no remember-me tokens. Spring Session gives 8 h persistent
   sessions, which covers the shift-work use case. Persistent remember-me
-  tokens are a P9 hardening item (needs its own table + rotation policy).
+  tokens are a hardening item (needs its own table + rotation policy).
 
-## 5. Tomcat bind address: 10.10.70.12 (user directive)
+## 5. Tomcat bind address: the LAN address of the host (operator directive)
 
-- **Decision:** the HTTP connector binds `10.10.70.12:18080` (server1 eth0
-  LAN), not loopback. The shutdown port stays on `127.0.0.1:18005`.
+- **Decision:** the HTTP connector binds the LAN address of the host on the
+  port 8080, not the loopback. The shutdown port stays on the loopback
+  (18005).
 - **Why:** the operator fronts the app from a forwarder on another host
-  (domain `ultibiz.ahadmart.com`). Binding to the LAN address keeps the app
+  (domain `erp.example.com`). Binding to the LAN address keeps the app
   unreachable from the public internet while reachable by the forwarder.
 - **Consequence:** the Apache-vhost alternative (loopback bind) remains
   documented in `docs/OPERATIONS.md`; switching is a one-line `server.xml`
@@ -51,9 +52,9 @@ Resolves the open decisions from `docs/ULTIBIZ_MASTER_PROMPT.md` §20 that affec
 ## 6. Database: dedicated MariaDB 11.8 container
 
 - **Decision:** UltiBiz uses its own MariaDB 11.8 container
-  (`ultibiz-mariadb`, 127.0.0.1:3311, 384 MB memory cap, 128 MB InnoDB buffer
+  (`ultibiz-mariadb`, localhost:3311 (the MariaDB container), 384 MB memory cap, 128 MB InnoDB buffer
   pool), not the host MariaDB 10.3.
 - **Why:** the host instance is 10.3 (below the spec minimum and shared with
   other apps); 11.8 is the first LTS with the `VECTOR` type the Knowledge
-  Vault RAG needs in P7. Isolation keeps UltiBiz migrations and backup
+  Vault RAG needs. Isolation keeps UltiBiz migrations and backup
   policies independent.

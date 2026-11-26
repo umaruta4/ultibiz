@@ -2,7 +2,7 @@ spring:
   application:
     name: ultibiz
   datasource:
-    url: jdbc:mariadb://${ULTIBIZ_DB_HOST:127.0.0.1}:${ULTIBIZ_DB_PORT:3311}/${ULTIBIZ_DB_NAME:ultibiz}?useUnicode=true&characterEncoding=UTF-8
+    url: jdbc:mariadb://${ULTIBIZ_DB_HOST:localhost}:${ULTIBIZ_DB_PORT:3311}/${ULTIBIZ_DB_NAME:ultibiz}?useUnicode=true&characterEncoding=UTF-8
     username: ${ULTIBIZ_DB_USER:ultibiz}
     password: ${ULTIBIZ_DB_PASSWORD:}
     hikari:
@@ -88,7 +88,7 @@ ultibiz:
     window-seconds: ${ULTIBIZ_RATE_LIMIT_WINDOW:60}
   dashboard:
     # where the scheduled reports are written
-    report-dir: ${ULTIBIZ_REPORT_DIR:/home/sufehmi/ultibiz-reports}
+    report-dir: ${ULTIBIZ_REPORT_DIR:/home/janedoe/ultibiz-reports}
     # optional webhook that receives the generated report (empty = file only)
     delivery-webhook: ${ULTIBIZ_DASHBOARD_DELIVERY_WEBHOOK:}
   ai:
@@ -106,7 +106,7 @@ ultibiz:
     # the administrator of the MariaDB server (creates the tenant databases)
     admin-user: ${ULTIBIZ_DB_ADMIN_USER:root}
     admin-password: ${ULTIBIZ_DB_ADMIN_PASSWORD:${MARIADB_ROOT_PASSWORD:}}
-    admin-host: ${ULTIBIZ_DB_HOST:127.0.0.1}
+    admin-host: ${ULTIBIZ_DB_HOST:localhost}
     admin-port: ${ULTIBIZ_DB_PORT:3311}
 
 logging:

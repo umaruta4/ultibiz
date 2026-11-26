@@ -9,9 +9,9 @@
 #     template)
 #
 # The secrets are written to the .env of the service (mode 600) — never into
-# the repository. The provider listens on 127.0.0.1:8180 only: the public URL
+# the repository. The provider listens on localhost:8180 only: the public URL
 # of the provider is a question of the reverse proxy in front of
-# ultibiz.ahadmart.com.
+# erp.example.com.
 #
 # Usage: bash deploy/keycloak/start-keycloak.sh [start|stop|status]
 set -euo pipefail
@@ -20,11 +20,11 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TEMPLATE="${ROOT}/deploy/keycloak/realm-ultibiz.json"
 RUNTIME_DIR=/var/lib/ultibiz-keycloak
 RUNTIME_REALM="${RUNTIME_DIR}/realm-ultibiz.json"
-ENV_FILE=/home/sufehmi/projects/ultibiz/.env
+ENV_FILE=/home/janedoe/projects/ultibiz/.env
 CONTAINER=ultibiz-keycloak
 IMAGE=quay.io/keycloak/keycloak:26.0.7
 PORT=8180
-ISSUER="http://127.0.0.1:${PORT}/realms/ultibiz"
+ISSUER="http://localhost:${PORT}/realms/ultibiz"
 
 set_env() {
   # sets the variable in the .env of the service (replaces an existing line)
@@ -66,8 +66,8 @@ USER_PASSWORD=$(grep '^ULTIBIZ_SSO_TEST_PASSWORD=' "${ENV_FILE}" 2>/dev/null | c
 sed -e "s|CHANGE-ME-GENERATE-A-SECRET|${CLIENT_SECRET}|" \
     -e "s|\"value\": \"CHANGE-ME\"|\"value\": \"${USER_PASSWORD}\"|" \
     -e "s|\"sslRequired\": \"external\"|\"sslRequired\": \"none\"|" \
-    -e "s|\"redirectUris\": \[\"https://ultibiz.ahadmart.com/login/oauth2/code/keycloak\"\]|\"redirectUris\": [\"https://ultibiz.ahadmart.com/login/oauth2/code/keycloak\", \"http://10.10.70.12:18080/login/oauth2/code/keycloak\", \"http://127.0.0.1:18080/login/oauth2/code/keycloak\"]|" \
-    -e "s|\"webOrigins\": \[\"https://ultibiz.ahadmart.com\"\]|\"webOrigins\": [\"https://ultibiz.ahadmart.com\", \"http://10.10.70.12:18080\"]|" \
+    -e "s|\"redirectUris\": \[\"https://erp.example.com/login/oauth2/code/keycloak\"\]|\"redirectUris\": [\"https://erp.example.com/login/oauth2/code/keycloak\", \"http://localhost:8080/login/oauth2/code/keycloak\", \"http://localhost:8080/login/oauth2/code/keycloak\"]|" \
+    -e "s|\"webOrigins\": \[\"https://erp.example.com\"\]|\"webOrigins\": [\"https://erp.example.com\", \"http://localhost:8080\"]|" \
     "${TEMPLATE}" > "${RUNTIME_REALM}"
 chmod 640 "${RUNTIME_REALM}"
 # the container runs as uid 1000 and must be able to read the realm
@@ -77,7 +77,7 @@ chmod 755 "${RUNTIME_DIR}"
 docker rm -f "${CONTAINER}" >/dev/null 2>&1 || true
 docker run -d --name "${CONTAINER}" \
   --restart unless-stopped \
-  -p "127.0.0.1:${PORT}:8080" \
+  -p "localhost:${PORT}:8080" \
   -e "KEYCLOAK_ADMIN=admin" \
   -e "KEYCLOAK_ADMIN_PASSWORD=${ADMIN_PASSWORD}" \
   -e KC_HEALTH_ENABLED=true \
@@ -102,7 +102,7 @@ fi
 set_env ULTIBIZ_SSO_ISSUER "${ISSUER}"
 set_env ULTIBIZ_SSO_CLIENT_ID ultibiz
 set_env ULTIBIZ_SSO_CLIENT_SECRET "${CLIENT_SECRET}"
-set_env ULTIBIZ_SSO_REDIRECT_URI "http://10.10.70.12:18080/login/oauth2/code/keycloak"
+set_env ULTIBIZ_SSO_REDIRECT_URI "http://localhost:8080/login/oauth2/code/keycloak"
 set_env ULTIBIZ_SSO_ROLE USER
 set_env ULTIBIZ_SSO_ORGANIZATION ACME
 set_env ULTIBIZ_SSO_TEST_PASSWORD "${USER_PASSWORD}"

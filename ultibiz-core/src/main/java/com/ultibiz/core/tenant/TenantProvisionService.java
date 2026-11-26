@@ -47,7 +47,7 @@ public class TenantProvisionService {
     public TenantProvisionService(TenantRegistryRepository registry, TenantService tenants,
                                   @Value("${ultibiz.tenant.admin-user:}") String adminUser,
                                   @Value("${ultibiz.tenant.admin-password:}") String adminPassword,
-                                  @Value("${ultibiz.tenant.admin-host:127.0.0.1}") String adminHost,
+                                  @Value("${ultibiz.tenant.admin-host:localhost}") String adminHost,
                                   @Value("${ultibiz.tenant.admin-port:3311}") String adminPort,
                                   @Value("${ultibiz.tenant.control-database:ultibiz}") String controlDatabase,
                                   @Value("${ultibiz.tenant.application-user:ultibiz}") String applicationUser,

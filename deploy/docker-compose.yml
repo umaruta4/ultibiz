@@ -10,7 +10,7 @@ services:
       MARIADB_PASSWORD: ${ULTIBIZ_DB_PASSWORD:?Set ULTIBIZ_DB_PASSWORD in .env}
       MARIADB_ROOT_PASSWORD: ${ULTIBIZ_DB_ROOT_PASSWORD:?Set ULTIBIZ_DB_ROOT_PASSWORD in .env}
     ports:
-      - "127.0.0.1:3311:3306"
+      - "localhost:3311:3306"
     volumes:
       - ultibiz-db:/var/lib/mysql
     command:

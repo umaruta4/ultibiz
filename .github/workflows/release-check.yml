@@ -37,7 +37,7 @@ jobs:
       - name: The build with the tests
         run: >-
           mvn -B verify
-          -Dultibiz.it.jdbcUrl=jdbc:mariadb://127.0.0.1:3311/ultibiz_test
+          -Dultibiz.it.jdbcUrl=jdbc:mariadb://localhost:3311/ultibiz_test
           -Dultibiz.it.user=ultibiz
           -Dultibiz.it.password=ci
           -Dultibiz.it.adminUser=root

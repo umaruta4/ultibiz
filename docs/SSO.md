@@ -24,7 +24,7 @@ The single sign-on lives in the Spring profile `sso` — without it the
 application has **no OAuth2 client** and behaves exactly as before.
 
 ```bash
-# in /home/sufehmi/projects/ultibiz/.env
+# in /home/janedoe/projects/ultibiz/.env
 SPRING_PROFILES_ACTIVE=sso
 ULTIBIZ_SSO_ISSUER=https://keycloak.example.com/realms/ultibiz
 ULTIBIZ_SSO_CLIENT_ID=ultibiz
@@ -42,7 +42,7 @@ reads `.env`); restart the service afterwards.
 
 `deploy/keycloak/start-keycloak.sh` starts the provider as a container
 (`ultibiz-keycloak`, image `quay.io/keycloak/keycloak:26.0.7`) on
-**127.0.0.1:8180**. The script
+**localhost:8180**. The script
 
 1. generates the client secret and the password of the demo user once and keeps
    them in the `.env` of the service,
@@ -62,18 +62,18 @@ bash deploy/keycloak/start-keycloak.sh stop     # stop and remove the container
 (`AUTH_SESSION_ID`) as *secure*: a browser does not send it over plain http
 and the login dies with "invalid request" (HTTP 400). The provider therefore
 has to be reachable over https in front of real users. The end-to-end test
-removes the flag for its own http requests on 127.0.0.1.
+removes the flag for its own http requests on localhost.
 
 **The role of a new user.** The base scheme knows the roles `ADMIN` and
 `USER`; the default of the provisioning is `USER`
 (`ULTIBIZ_SSO_ROLE`). A role code that does not exist is reported as a
 warning in the log — the user is created but has no permission.
 
-**The public address of the provider.** The listener on 127.0.0.1 is enough
+**The public address of the provider.** The listener on localhost is enough
 for a test on the deploy host itself. For a real user the issuer must be a URL
 the browser of that user can reach (for example
-`https://sso.ahadmart.com/realms/ultibiz`): the reverse proxy in front of
-`ultibiz.ahadmart.com` has to forward that hostname to the provider, and
+`https://sso.example.com/realms/ultibiz`): the reverse proxy in front of
+`erp.example.com` has to forward that hostname to the provider, and
 `ULTIBIZ_SSO_ISSUER` / the redirect URI of the client have to point at the
 public address. That forwarding lives outside this repository.
 
@@ -84,7 +84,7 @@ redirects to the provider, the login form is filled in, the provider sends the
 code back and the application continues with the local session.
 
 ```bash
-python3 tools/sso-smoke-test.py http://10.10.70.12:18080 http://127.0.0.1:8180/realms/ultibiz
+python3 tools/sso-smoke-test.py http://localhost:8080 http://localhost:8180/realms/ultibiz
 ```
 
 The password of the demo user is read from the `.env`
@@ -102,7 +102,7 @@ Import it in Keycloak (Realm settings → Import), then:
    ultibiz → Credentials) and put the same value into
    `ULTIBIZ_SSO_CLIENT_SECRET`.
 2. Put the public URL of the application in the redirect URI of the client
-   (`https://ultibiz.ahadmart.com/login/oauth2/code/keycloak`).
+   (`https://erp.example.com/login/oauth2/code/keycloak`).
 3. Give the users the role `ultibiz-admin` when they should be administrators.
 
 Without Keycloak any OpenID Connect provider works: the issuer URI is the only
@@ -123,7 +123,7 @@ provider-specific setting, and the claims are the standard ones.
 
 ## What was verified on the deploy host (2026-11-27)
 
-* the provider `quay.io/keycloak/keycloak:26.0.7` on 127.0.0.1:8180, the realm
+* the provider `quay.io/keycloak/keycloak:26.0.7` on localhost:8180, the realm
   imported with a generated client secret and a generated password of the demo
   user,
 * the login page shows **Sign in with Keycloak** with the profile `sso`,

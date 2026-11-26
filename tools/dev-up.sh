@@ -5,8 +5,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 COMPOSE_FILE="${ROOT}/deploy/docker-compose.yml"
 ENV_FILE="${ROOT}/deploy/.env"
-HEALTH_URL="http://127.0.0.1:18080/actuator/health"
-APP_URL="http://127.0.0.1:18080/"
+HEALTH_URL="http://localhost:8080/actuator/health"
+APP_URL="http://localhost:8080/"
 
 if [[ ! -f "${ENV_FILE}" ]]; then
   cp "${ROOT}/deploy/.env.example" "${ENV_FILE}"

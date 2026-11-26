@@ -1,5 +1,8 @@
 package com.ultibiz.web.security;
 
+import com.ultibiz.core.settings.SystemSettingsService;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,6 +34,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final int limit;
     private final long windowSeconds;
 
+    /** The settings of the deployment: the rate limit can be changed at runtime. */
+    @Autowired(required = false)
+    private SystemSettingsService settings;
+
     public RateLimitFilter(
             @Value("${ultibiz.rate-limit.requests:60}") int limit,
             @Value("${ultibiz.rate-limit.window-seconds:60}") long windowSeconds) {
@@ -51,16 +58,20 @@ public class RateLimitFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
             return;
         }
+        int effectiveLimit = settings == null ? limit
+                : settings.intValue("rate.limit.requests", limit);
+        long effectiveWindow = settings == null ? windowSeconds
+                : settings.intValue("rate.limit.window", (int) windowSeconds);
         String key = clientKey(request) + "|" + path;
         int count = counters.computeIfAbsent(key, k -> new AtomicInteger()).incrementAndGet();
         if (count == 1) {
             // the window of this key starts now
-            scheduleReset(key);
+            scheduleReset(key, effectiveWindow);
         }
-        if (count > limit) {
+        if (count > effectiveLimit) {
             LOG.warn("The rate limit was reached for {} ({} requests)", key, count);
             response.setStatus(429);
-            response.setHeader("Retry-After", String.valueOf(windowSeconds));
+            response.setHeader("Retry-After", String.valueOf(effectiveWindow));
             response.setContentType("application/json");
             response.getWriter().write("{\"error\":\"too many requests\"}");
             return;
@@ -68,10 +79,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-    private void scheduleReset(String key) {
+    private void scheduleReset(String key, long window) {
         Thread.ofVirtual().start(() -> {
             try {
-                Thread.sleep(windowSeconds * 1000);
+                Thread.sleep(window * 1000);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
                 return;

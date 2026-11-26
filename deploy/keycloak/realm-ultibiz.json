@@ -24,10 +24,10 @@
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
-      "redirectUris": ["https://ultibiz.ahadmart.com/login/oauth2/code/keycloak"],
-      "webOrigins": ["https://ultibiz.ahadmart.com"],
+      "redirectUris": ["https://erp.example.com/login/oauth2/code/keycloak"],
+      "webOrigins": ["https://erp.example.com"],
       "attributes": {
-        "post.logout.redirect.uris": "https://ultibiz.ahadmart.com/*"
+        "post.logout.redirect.uris": "https://erp.example.com/*"
       },
       "protocolMappers": [
         {

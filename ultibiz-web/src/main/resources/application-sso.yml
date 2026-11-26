@@ -3,7 +3,7 @@
 # before (the local form login, no OAuth2 client).
 
 server:
-  # the application sits behind the reverse proxy of ultibiz.ahadmart.com:
+  # the application sits behind the reverse proxy of erp.example.com:
   # the redirect URI of the identity provider must be the public URL
   forward-headers-strategy: framework
 
