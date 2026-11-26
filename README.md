@@ -1,471 +1,337 @@
 # UltiBiz
 
-Open-source, modular ERP for multi-site manufacturing and distribution.
+Open-source, modular ERP for multi-site manufacturing and distribution — from the
+master data to the books, the warehouse, the factory, the service desk and the
+assistant. Everything in one application, one database schema and one set of
+roles.
+
 Java 21 · Spring Boot 4.2.0 (WAR on Apache Tomcat 11) · MariaDB 11.8+ ·
 Thymeleaf 3.1 + HTMX 2 + Bootstrap 5.3 (vendored — no CDN at runtime, no
-Node/npm/bundler). Runs at root context (`/`).
+Node/npm/bundler) · runs at the root context (`/`).
 
-## Status
-
-| Phase | Scope | State |
-|---|---|---|
-| **P0** | Foundation: Maven multi-module, schema baseline, security/login, DB-backed sessions, web shell, dark mode, audit, health probes, Flyway, deploy tooling | **done** |
-| **P1** | Master data + multi-site (product, party, warehouse/rack/bin/dock, production line, work center), numbering engine, country/tax SPI, CSV import/export, master-data screens | **done** |
-| **P2** | Accounting: chart of accounts, fiscal periods, double-entry posting engine, reversals, tax packs (ID PPN + EU VAT), multi-currency, trial balance, accounting screens | **done** |
-| **P2b** | AR/AP: invoices, bills, receipts, payments, allocations, ageing, three-way match, bank statement import + reconciliation | **done** |
-| **P3** | Sales & purchase orders, goods receipts, stock (moving average), BOM + work orders, order/inventory/manufacturing screens | **done** |
-| **P4** | Asset register, depreciation (SL/DB/UoP), disposal, maintenance, MRP | **done** |
-| **P5** | Data exchange: canonical BDM, inbox/outbox, REST + CSV + Peppol UBL + EDI adapters, console, scheduler | **done** |
-| **P6** | Offline-first client (IndexedDB outbox, service worker, PWA), sync API, conflict policy, conflict centre | **done** |
-| **P7** | AI assistant: provider gateway, per-organisation config, tools with human confirmation, insights, RAG over the knowledge vault | **done** |
-| **P8** | The six plugins: HRM, Projects, CRM, Dashboard, Knowledge Vault, Helpdesk | **done** |
-| **P9** | Hardening & release: rate limit, backup + restore drill, release gate, runbook, security notes | **done** |
-| **P10** | Native PDF reports, the report e-mail (SMTP + API provider), the CI pipeline | **done** |
-| **P11** | The e-mail settings in the administration interface (sealed secrets, test e-mail) | **done** |
-| **P12** | SSO / OpenID Connect with Keycloak: auto-provisioning, role mapping, OIDC logout, fallback login form | **done** (the flow was tested end to end against a real Keycloak) |
-| **P13** | Multi-tenant on the database level: the tenant registry, the routing connection, the provisioning of a tenant database | **done** (the mode `single` stays the default) |
-
-## What P2b delivers
-
-- **Customer invoices**: issued from a shipped sales order; they post a real
-  journal (debit receivables, credit revenue, credit tax payable) and the
-  invoice keeps the journal reference.
-- **Supplier bills**: issued from a received purchase order; the journal books
-  the inventory/expense against the payable.
-- **Receipts and payments**: money in and money out, each with its own journal;
-  the amount is allocated to a chosen invoice/bill first and to the oldest open
-  ones afterwards. The document status follows: `OPEN` → `PARTIAL` → `PAID`.
-- **Ageing**: receivables and payables with days overdue and the total
-  outstanding.
-- **Three-way match**: bill against purchase order and goods receipt, with a
-  configurable tolerance (percent and absolute amount, per organization).
-- **Bank and cash**: bank/cash accounts linked to a ledger account, statement
-  import from CSV and a reconciliation that matches statement lines against the
-  receipts and payments by amount and date.
-- **Screens**: `/accounting/ar`, `/accounting/ar/aging`, `/accounting/ap`,
-  `/accounting/ap/aging`, `/accounting/ap/{id}/match`, `/accounting/bank`.
-
-Details: schema migration `V202611250005__p2b_ar_ap.sql`.
-
-## What P12 delivers (the single sign-on with Keycloak)
-
-- **OpenID Connect** (OAuth 2.0 authorization code) through the Spring Security OAuth2 client — the profile `sso` activates it, without a client registration the **login form keeps working** (the fallback).
-- **Auto-provisioning**: an unknown user of the identity provider gets a local user (a random password that cannot be used on the login form, the default organisation and the default role). The second login reuses the row.
-- **The session stays local**: after the OIDC login the request runs with the normal UltiBiz principal — the permissions, the site scope and the audit behave exactly like with the login form.
-- **The role mapping**: the roles of the provider (`ultibiz-admin`, `ultibiz-user`) become the local authorities; the administrator role of the provider is carried over.
-- **OIDC logout**: the session of UltiBiz ends with the session of the provider.
-- **The realm template** `deploy/keycloak/realm-ultibiz.json` (the realm `ultibiz`, the client `ultibiz`, the redirect URI `https://ultibiz.ahadmart.com/login/oauth2/code/keycloak`, the protocol mappers) and the guide `docs/SSO.md`.
-
-## What P13 delivers (one database per organisation)
-
-- **The control database** keeps the identity (the organisations, the users, the roles, the site scopes) and the **tenant registry** (`tenant_registry`); every tenant owns a database with its own business data.
-- **The routing**: the connection of a request goes to the database of the organisation of the logged-in user (a filter puts the tenant on the thread, the routing data source gives the connection). The mode `single` (the default) changes nothing for the existing installation; the mode `database` activates the routing.
-- **The provisioning** in **Administration → Tenants**: the database is created, the migrations run on it, the demo data is removed and the identity of the organisation is copied. The administrator of the MariaDB server does the creation (`ULTIBIZ_DB_ADMIN_USER` / `ULTIBIZ_DB_ADMIN_PASSWORD`).
-- **The suspension**: a suspended tenant falls back to the control database.
-- **The test**: `TenantDatabaseIntegrationTest` provisions a real second database and proves that a row written in the tenant is **not** in the control database.
-
-Details: `docs/MULTI-TENANT.md`.
-
-## What P11 delivers (the e-mail settings in the interface)
-
-The e-mail transport is **configured by the administrator in the interface** — no file to edit, no restart:
-
-- **Administration → E-mail settings** (`/admin/settings/email`, the administrators only): the transport, the sender address and the credentials, with a **test e-mail** button.
-- The transport: **none**, **SMTP**, **Mailchimp Transactional (Mandrill)**, **SendGrid**, **Mailgun** (region `us`/`eu`) or a **generic webhook** — the fields of the chosen one appear, the others hide.
-- The secrets (the SMTP password, the API key, the webhook secret) are **sealed with AES-GCM** under the deployment key: they are never stored in clear text and never sent back to the browser (the form only says "the secret is set"). An empty field keeps the stored secret; a checkbox removes it.
-- The settings are **per organisation** and take effect immediately — the report scheduler reads them at every run.
-- The environment variables (`ULTIBIZ_EMAIL_PROVIDER`, `ULTIBIZ_SMTP_*`, ...) stay the **fallback** for the installations without a configuration in the interface.
-
-## What P10 delivers
-
-- **Native PDF reports**: a scheduled report with the format `PDF` is rendered to a real PDF (Flying Saucer + OpenPDF, headless) — verified on production: `HEADCOUNT-2026-11-26.pdf` (PDF 1.5). The report values are **XML-escaped** (a value like `Research & <Development>` can no longer break the report — or inject HTML).
-- **E-mail delivery via SMTP or an API provider**: the report scheduler mails the generated file to the subscriber as an attachment. The transport is picked with `ULTIBIZ_EMAIL_PROVIDER`: `mandrill`/`mailchimp` (Mailchimp Transactional), `sendgrid`, `mailgun` (with the `us`/`eu` region) or `webhook` (any provider — the message is posted as JSON with the attachment as base64 and an optional shared secret). Without a provider the SMTP relay is used (`ULTIBIZ_SMTP_HOST` etc.), and without both the mailer stays inactive — the file and the webhook keep working.
-- **CI pipeline**: `.github/workflows/release-check.yml` runs the i18n audit and `mvn -B verify` on every push/PR with a MariaDB 11.8 service container — the same gate as the release check.
-
-## What P9 delivers (hardening & release)
-
-- **Rate limit** on the public endpoints (the customer portal, the inbound webhook): per IP and path, `429` with `Retry-After`.
-- **Backup + restore drill** as scripts, not a promise: `tools/backup.sh` writes a consistent dump (`--single-transaction`) plus the report files, `tools/restore-drill.sh` restores it into a scratch database and compares the row counts table by table — the drill is green on the production instance.
-- **Release gate** `tools/release-check.sh` (the i18n audit, the build with the tests, the migration check).
-- **Documents**: `docs/RUNBOOK.md` (the services, the deploy, the rollback, the backup, the schedulers, the secrets, the troubleshooting table), `docs/SECURITY.md` (what protects the application and where the limits are), `docs/RELEASE-NOTES-P8.md`.
-
-## What P8 delivers (all 6 plugins: HRM, Projects, CRM, Dashboard, Knowledge Vault, Helpdesk)
-
-**Projects.** Delivery work with real money behind it:
-
-- **Projects** with customer, manager, budget, currency and a billing rate per hour; statuses ACTIVE / ON_HOLD / CLOSED.
-- **WBS**: a tree per project with budgeted hours.
-- **Milestones**: billing events on the PENDING → REACHED → INVOICED flow. Invoicing a reached milestone **posts a real journal** (Dr Accounts Receivable / Cr Sales Revenue) through the regular posting engine — the milestone carries the journal id, and the books reflect the revenue immediately.
-- **Resource assignments** with a capacity rule: an employee is never allocated more than the weekly hours of their contract across overlapping assignments (the conflict is refused with the exact numbers).
-- **Cost & revenue tracking**: the approved HRM timesheets of the project code become the labour cost at the contractual hourly rate (base / (weekly hours × 4.348125)); billable hours at the billing rate plus invoiced milestones become the revenue; the report shows hours, cost, revenue, profitability and budget usage per project and per employee.
-- One end-to-end IT: timesheet approved in HRM → project cost → milestone invoiced → journal posted → profitability.
-
-**Helpdesk.** The service desk, from the customer to the SLA:
-
-- **Queues with SLA tiers**: every queue carries its own response and resolution window (support: 8 h / 72 h, critical: 1 h / 8 h) and its escalation window; the deadlines are computed by the **database clock**, so the application server may run in another time zone.
-- **Intake** from the portal, e-mail, phone or chat; the priority is read from the words of the requester ("server down" → URGENT).
-- **Triage, assignment and the status flow**: NEW → TRIAGED → ASSIGNED → IN_PROGRESS → WAITING → RESOLVED → CLOSED (a resolved ticket can be reopened); the flow is enforced.
-- **Replies** in two flavours: public (the customer sees it, it stamps the first response) and internal notes (the team only).
-- **Escalation**: a manual escalation with a reason, and an SLA monitor that escalates the overdue tickets (named lock, so two replicas never escalate twice).
-- **Knowledge suggestions**: the vault documents that match the subject and the description of the request are attached to the ticket.
-- **Customer portal**: a read-only page per ticket — the token in the link is the secret, no account needed (`/portal/{token}`); the customer sees the public thread and can reply.
-- One end-to-end IT: intake (SLA of the queue) → urgent detection → triage → assignment → public reply → resolve/close → portal link → knowledge suggestions → SLA monitor.
-
-**Knowledge Vault.** The company memory, with the rules of a real document store:
-
-- **Documents with versions**: every revision is kept (`kv_version`), the current version is the live one; a new version **re-indexes the RAG corpus** so the assistant cites the newest text.
-- **Folders** (a tree with no cycle, max 5 levels) and **tags**.
-- **Search**: MariaDB FULLTEXT over the versions (boolean mode, prefix terms) — an archived document leaves the search.
-- **Legal hold**: a document on hold is never touched by the retention run.
-- **Retention policies**: per folder or organisation, ARCHIVE or DELETE after N months; a scheduled/one-off run reports what it archived, deleted and kept.
-- One end-to-end IT: document → corpus chunking → new version → re-index → fulltext search → legal hold → retention run → archived document leaves the search.
-
-**Dashboard.** The cockpit, role-aware:
-
-- **KPI tiles** from the real ERP data — revenue this month, overdue receivables, cash on hand, open sales/purchase orders, stock value, headcount, leave requests waiting, CRM pipeline, project budget. Every tile carries the permission codes that make it visible, so a role sees its own cockpit; every tile has a **drill-through** link into the module it measures.
-- **Thresholds & alerts**: a metric above (or below) a configured value raises an alert with its severity (INFO / WARNING / CRITICAL), sorted by severity.
-- **Saved views**: a named filter set per module, personal or shared with the organisation.
-- **Scheduled reports**: a subscription per user (daily / weekly / monthly — the weekly run always lands on Monday), the report is written to disk as CSV or a print-ready HTML page (the browser can save it as PDF) and offered for download; when `ULTIBIZ_DASHBOARD_DELIVERY_WEBHOOK` is set the report is also posted to that webhook.
-- **Insight board** on the same page: it consumes the `AiInsightProvider` rules (negative stock, below safety stock, overdue AR) with evidence, confidence and a suggested action.
-- A scheduler writes the due reports under a MariaDB named lock, so two replicas never write the same report twice.
-
-**CRM.** The commercial side, from a stranger to a signed order:
-
-- **Leads** with company, contact, source (manual / web / referral / campaign), territory and campaign; a lead qualifies only with a way to reach it, and converts only from QUALIFIED.
-- **Conversion** creates the customer in the master data (`CUST-<lead code>`) and opens an opportunity at the first pipeline stage — no duplicate customer data.
-- **Pipeline** (NEW → QUALIFIED → PROPOSAL → NEGOTIATION → WON / LOST) with a probability per stage: the pipeline never moves backwards, a lost deal needs a reason, a won deal needs an amount. The board shows the weighted value (amount × probability).
-- **Quote hand-off to Sales**: an open opportunity with an amount becomes a real **draft sales order** with one line at the opportunity value — Sales confirms, delivers and invoices it from there; the opportunity carries the order id and refuses a second hand-off.
-- **Activities** (call / meeting / e-mail / task) per lead, opportunity or contact, with due dates and completion; **campaigns** and **territories** for the campaigns and the market split.
-- One end-to-end IT: lead → qualify → convert (party + opportunity) → pipeline rules → hand-off (real sales order) → won → activities.
-
-**HRM.** The people side of the company, end to end:
-
-**Helpdesk.** The service desk, from the customer to the SLA:
-
-- **Queues with SLA tiers**: every queue carries its own response and resolution window (support: 8 h / 72 h, critical: 1 h / 8 h) and its escalation window; the deadlines are computed by the **database clock**, so the application server may run in another time zone.
-- **Intake** from the portal, e-mail, phone or chat; the priority is read from the words of the requester ("server down" → URGENT).
-- **Triage, assignment and the status flow**: NEW → TRIAGED → ASSIGNED → IN_PROGRESS → WAITING → RESOLVED → CLOSED (a resolved ticket can be reopened); the flow is enforced.
-- **Replies** in two flavours: public (the customer sees it, it stamps the first response) and internal notes (the team only).
-- **Escalation**: a manual escalation with a reason, and an SLA monitor that escalates the overdue tickets (named lock, so two replicas never escalate twice).
-- **Knowledge suggestions**: the vault documents that match the subject and the description of the request are attached to the ticket.
-- **Customer portal**: a read-only page per ticket — the token in the link is the secret, no account needed (`/portal/{token}`); the customer sees the public thread and can reply.
-- One end-to-end IT: intake (SLA of the queue) → urgent detection → triage → assignment → public reply → resolve/close → portal link → knowledge suggestions → SLA monitor.
-
-**Knowledge Vault.** The company memory, with the rules of a real document store:
-
-- **Documents with versions**: every revision is kept (`kv_version`), the current version is the live one; a new version **re-indexes the RAG corpus** so the assistant cites the newest text.
-- **Folders** (a tree with no cycle, max 5 levels) and **tags**.
-- **Search**: MariaDB FULLTEXT over the versions (boolean mode, prefix terms) — an archived document leaves the search.
-- **Legal hold**: a document on hold is never touched by the retention run.
-- **Retention policies**: per folder or organisation, ARCHIVE or DELETE after N months; a scheduled/one-off run reports what it archived, deleted and kept.
-- One end-to-end IT: document → corpus chunking → new version → re-index → fulltext search → legal hold → retention run → archived document leaves the search.
-
-**Dashboard.** The cockpit, role-aware:
-
-- **KPI tiles** from the real ERP data — revenue this month, overdue receivables, cash on hand, open sales/purchase orders, stock value, headcount, leave requests waiting, CRM pipeline, project budget. Every tile carries the permission codes that make it visible, so a role sees its own cockpit; every tile has a **drill-through** link into the module it measures.
-- **Thresholds & alerts**: a metric above (or below) a configured value raises an alert with its severity (INFO / WARNING / CRITICAL), sorted by severity.
-- **Saved views**: a named filter set per module, personal or shared with the organisation.
-- **Scheduled reports**: a subscription per user (daily / weekly / monthly — the weekly run always lands on Monday), the report is written to disk as CSV or a print-ready HTML page (the browser can save it as PDF) and offered for download; when `ULTIBIZ_DASHBOARD_DELIVERY_WEBHOOK` is set the report is also posted to that webhook.
-- **Insight board** on the same page: it consumes the `AiInsightProvider` rules (negative stock, below safety stock, overdue AR) with evidence, confidence and a suggested action.
-- A scheduler writes the due reports under a MariaDB named lock, so two replicas never write the same report twice.
-
-**CRM.** The commercial side, from a stranger to a signed order:
-
-- **Leads** with company, contact, source (manual / web / referral / campaign), territory and campaign; a lead qualifies only with a way to reach it, and converts only from QUALIFIED.
-- **Conversion** creates the customer in the master data (`CUST-<lead code>`) and opens an opportunity at the first pipeline stage — no duplicate customer data.
-- **Pipeline** (NEW → QUALIFIED → PROPOSAL → NEGOTIATION → WON / LOST) with a probability per stage: the pipeline never moves backwards, a lost deal needs a reason, a won deal needs an amount. The board shows the weighted value (amount × probability).
-- **Quote hand-off to Sales**: an open opportunity with an amount becomes a real **draft sales order** with one line at the opportunity value — Sales confirms, delivers and invoices it from there; the opportunity carries the order id and refuses a second hand-off.
-- **Activities** (call / meeting / e-mail / task) per lead, opportunity or contact, with due dates and completion; **campaigns** and **territories** for the campaigns and the market split.
-- One end-to-end IT: lead → qualify → convert (party + opportunity) → pipeline rules → hand-off (real sales order) → won → activities.
-
-**HRM.** The people side of the company, end to end:
-
-- **Employee master** with org structure (positions with parents, departments, cost centres) — the personal fields (e-mail, phone, national id, birth date) are explicitly in the GDPR scope.
-- **Contracts**: permanent / fixed-term / intern / freelance with salary, currency and weekly hours.
-- **Leave**: working-day computation (weekends skipped), overlap detection against open requests, and a per-type annual balance enforced on submit; approve/reject with audit.
-- **Timesheets**: ≤ 24 h per entry, never in the future, unique per (employee, day, project) — approved hours feed the project costs.
-- **Expense claims**: the claim total is always the sum of its lines; submit → approve/reject → (paid in accounting).
-- **H&S incident register** (injury / near-miss / equipment / environment with severity, OPEN → INVESTIGATING → CLOSED) — feeds the helpdesk.
-- **Payroll run & export**: one run per period (YYYY-MM), net = base + allowances − deductions, cost-centre allocation by approved hours, CSV export; an exported run is closed forever.
-- **GDPR hooks**: personal-data export (JSON) and erasure that anonymises the personal fields while the financial rows (contracts, payroll, expenses) stay untouched — the books never change; every erasure is logged.
-- Permission matrix, 11 business-rule unit tests, one end-to-end IT (hire → leave → timesheet → expense → payroll export → GDPR), i18n EN+ID, dark-mode UI.
-
-## What P7 delivers
-
-**AI assistant.** The assistant lives in a drawer on every screen (header button or Ctrl/⌘K), answers questions about the data with citations, and can prepare write actions — a human always confirms them.
-
-- **Provider gateway with SPI**: OpenAI-compatible servers (OpenAI, llama.cpp, vLLM, Ollama, any new-api style gateway), Anthropic and a local Echo provider, behind one `AiGateway` with timeouts, retries and a circuit breaker. When the provider is down the assistant degrades gracefully; the ERP never does.
-- **Per-organisation configuration** (`/ai/usage`): provider, base URL, model, temperature, timeouts and an *allow external providers* switch that is **off by default** — data stays on the chosen endpoint. API keys are stored AES-encrypted (`ULTIBIZ_AI_ENCRYPTION_KEY`); without the key no key can be saved.
-- **PII redaction** before anything leaves the box (country-aware rules: e-mail, phone numbers, Indonesian NPWP).
-- **Tools**: read tools (`find_invoices`, `find_bills`) run inline and are logged; the write tool (`draft_journal`) returns a **proposal with a diff** (`/ai/actions/propose`) that only posts through the regular `JournalService` after a human confirms it (`/ai/actions/{id}/confirm`). Every prompt, answer and tool call is stored with model, token usage and latency, and the audit trail carries the AI conversation id.
-- **Insight engine**: a scheduler (DB-lock guarded, so one instance at a time) runs rule providers — negative stock, below-safety-stock, overdue AR — and files alerts with evidence, confidence and a suggested action (`/ai/insights`, manual run via POST `/ai/insights/run`).
-- **RAG knowledge base**: a knowledge vault (`knowledge_document` / `knowledge_chunk`) is chunked and embedded (768-dim hashing encoder with character trigrams); retrieval is hybrid — MariaDB `FULLTEXT` plus cosine distance — and answers cite the documents. A question without a match is answered honestly ("not found in the knowledge base").
-- **Note on MariaDB 11.8**: the build on Ubuntu 24.04 ships the `VECTOR` type but not the vector functions, so the native HNSW index is deferred (documented in the migration); the retrieval runs on the text copy of the embedding and the fulltext index, which keeps the whole feature portable.
-
-## What P6 delivers
-
-- **Offline-first client** (`static/js/sync.js`): a dependency-free IndexedDB
-  wrapper with three stores (outbox, snapshots, meta), the offline banner, the
-  status bar (pending / failed with the operator-readable reason) and the
-  policy that refuses the online-only forms while offline.
-- **Service worker and PWA**: `static/sw.js` precaches the app shell and the
-  vendored assets in a versioned cache (stale while revalidate, the cached
-  shell as the navigation fallback), plus `manifest.webmanifest` and the
-  installable icons.
-- **Server side**: `ub_change_log` (a monotonic sequence per organisation),
-  `ub_idempotency` (every pushed operation is applied exactly once),
-  `ub_sync_entity` (the documents that may be created offline), `ub_sync_queue`
-  (the retry queue) and `ub_sync_conflict` (the conflicts).
-- **Sync API**: `POST /api/sync/push`, `GET /api/sync/changes?since=`,
-  `GET /api/sync/pull?cursor=` and `GET /api/sync/status`; every pushed
-  operation gets its own answer — APPLIED, CONFLICT, REJECTED or DUPLICATE.
-- **Conflict policy**: last writer wins for the low-risk fields, a field-level
-  merge for disjoint edits, and the server wins plus an operator decision for
-  the numeric, financial and status fields — a numeric field is never silently
-  overwritten, so an update can not be lost.
-- **Conflict centre** (`/sync/conflicts`): the field diff with keep mine,
-  keep theirs and merge.
-- **Offline policy**: accounting postings, stock transfers, invoices, bills and
-  receipts are online-only and are refused with a clear reason; drafts,
-  notes, timesheets, attendance, stock counts and tickets work offline.
-
-## What P5 delivers
-
-- **Canonical document model (BDM)** — one Java model (`CanonicalDocument`)
-  that every adapter maps into and out of: document types (invoice, credit
-  note, order, despatch, purchase invoice, statement), parties with
-  electronic addresses, lines, tax breakdown, totals, payment terms and
-  references. Totals are derived from the lines, so every protocol renders the
-  same numbers.
-- **Inbox/outbox engine** — `RECEIVED → PARSED → VALIDATED → MAPPED → APPLIED`
-  for inbound, `QUEUED → SENT` for outbound, with an **idempotency key** per
-  (organisation, partner, direction): a re-delivery returns the existing
-  message and never creates a second document. Failures retry with exponential
-  backoff, land in the **dead-letter queue** after the maximum attempts and can
-  be replayed by an operator.
-- **Adapters**
-  - *REST/JSON* — the payload is the canonical JSON; the inbound webhook is
-    `POST /api/exchange/inbound/{partnerCode}` with `X-Idempotency-Key` and a
-    shared secret (`X-Exchange-Secret`); the loopback simulators live under
-    `/api/exchange/sim/**`.
-  - *Peppol UBL* — UBL 2.1 Invoice/Credit Note per Peppol BIS Billing 3.0
-    (EN 16931) with `cbc:EndpointID` + `schemeID`, VAT breakdown and
-    `CustomizationID`/`ProfileID`; the validation reports the **exact EN 16931
-    rule id** (BR-02 … BR-27, BR-CO-25, PEPPOL-EN16931-R010/R020) and only
-    fatal rules reject.
-  - *EDI* — a hand-written X12 parser (ISA/GS/GE/IEA envelope, 850/810) with
-    997 functional acknowledgements and a hand-written EDIFACT parser
-    (UNB/UNH/UNT/UNZ, ORDERS/INVOIC) with CONTRL acknowledgements.
-  - *CSV* — flat files with one row per line and the header fields repeated.
-- **Console** — partner registry, document browser (raw payload, canonical
-  mapping, validation report), the mapping test-run console and the monitoring
-  dashboard (throughput per status, dead-letter count).
-- **Scheduler** — the retry batch runs under a MariaDB named lock
-  (`GET_LOCK`), so two replicas never deliver the same message twice.
-
-## What P4 delivers
-
-- **Asset register** (`/assets`): assets in categories with the depreciation
-  rule of the category — straight line, declining balance or units of
-  production. Registration, transfer between sites, disposal with the
-  proceeds-versus-book-value gain/loss posted to the ledger.
-- **Monthly depreciation run** (`/assets/depreciation`): one journal per
-  period for the whole register, idempotent (a period cannot be depreciated
-  twice); the book value never drops below the salvage value.
-- **Maintenance** (`/assets/maintenance`): recurring plans per category,
-  scheduled jobs with due dates and completion cost, meter readings that drive
-  the units-of-production depreciation.
-- **MRP suggestions** (`/planning/mrp`): net requirement per product = open
-  sales demand + safety stock − on hand − on order, rounded up to the minimum
-  order quantity, suggested date = today + lead time.
-- Schema for the next step is already in place: multi-level BOM lines
-  (phantoms), engineering change notices, shift calendar, lot/serial
-  traceability on stock movements and receipts.
-- The sidebar groups its submenus behind collapsible sections with a chevron;
-  the group of the current page opens automatically.
-
-## What P3 delivers
-
-- **Sales orders**: line totals with discounts, tax per the country pack, and a
-  **credit limit check** that refuses to store an over-limit order.
-- **Purchase orders**: receipts book the goods into stock and update the
-  received quantities; partial receipts keep the order `PARTIALLY_RECEIVED`.
-- **Stock**: `stock_balance` with a **moving average cost** and an immutable
-  `stock_movement` ledger; an issue that would drive a balance negative is
-  refused. The balance row is locked before it changes.
-- **Goods receipts**: one document per physical movement (purchase, delivery,
-  production), linked to its source order.
-- **Manufacturing**: a work order explodes the bill of material into material
-  requirements (with scrap), the release verifies that the materials are
-  really in stock, the issue takes them out, and the completion books the
-  finished goods in at the average material cost.
-- **Screens**: sales/purchase orders (list, form, detail with confirm /
-  deliver / receive), stock overview, work orders (list, form, detail with
-  release / issue / complete).
-
-Details: schema migration `V202611250004__p3_orders_stock.sql`.
-
-### Known P3 gaps
-
-- Deliveries and receipts act on the whole outstanding quantity per line, not
-  on a chosen quantity per line.
-- There is no stock transfer between warehouses and no stock-taking (cycle
-  count) yet.
-- Routing / capacity planning and back-flushing are not implemented.
-- The AR / AP side of an order (invoice, allocation, ageing, three-way match)
-  is the next accounting slice.
-
-## What P2 delivers
-
-- **Chart of accounts**: hierarchical, organization-scoped, optional country,
-  postable flag; seeded with a standard Indonesian chart of accounts.
-- **Fiscal periods**: per country and month, `OPEN` / `CLOSED` / `REOPENED`;
-  closing is audited, reopening needs the permission
-  `accounting.period.reopen` and is audited too.
-- **Posting engine**: a journal is posted only when it balances, every line
-  carries exactly one side, the account is postable and the period is open.
-  Header, lines, document number and audit entry are written in **one**
-  transaction with the period row locked (`SELECT … FOR UPDATE`).
-- **Immutability**: posted journals are never edited; a correction is a
-  reversal that mirrors the lines and marks the original `REVERSED`.
-- **Tax packs** behind the `TaxPack` SPI: Indonesia PPN (11 % / 2 % / exempt)
-  and an EU VAT pack (20 %, document-level rounding), plus a default pack that
-  reads the effective-dated rules from the database.
-- **Multi-currency**: `FxService` + `FxRateProvider` SPI; the ledger keeps the
-  transaction amounts *and* the functional-currency amounts.
-- **Screens**: chart of accounts, journal list, journal editor with a live
-  balance check, journal detail with reversal, fiscal period calendar and the
-  trial balance.
-
-Details: [`docs/P2-ACCOUNTING.md`](docs/P2-ACCOUNTING.md) ·
-[`docs/adr/ADR-003-posting-engine.md`](docs/adr/ADR-003-posting-engine.md)
-
-### Known P2 gaps
-
-- AR / AP (invoices, bills, allocations, ageing, three-way match), bank
-  statements and reconciliation are not built yet — they are the next slice.
-- Year-end closing and carry-forward are not automated; a period can be closed
-  and reopened by hand.
-- No approval thresholds: posting rights come from the role, not from an
-  amount limit.
-
-## What P1 delivers
-
-- **Master data**: products (UOM, barcode, batch/serial flags, standard cost),
-  parties (tax id, credit limit, payment terms), warehouses with racks, bins
-  and docks, production lines, work centers, work calendar.
-- **Multi-site**: every master row carries `organization_id` + `site_id`;
-  `site_id IS NULL` = shared by all sites of the organization. Scoping is
-  enforced in the repository layer (`SiteScopedSql`), never in the UI.
-- **Numbering engine**: per document type + scope, prefix, padding, monthly /
-  fiscal-year restart, concurrency-safe (row lock, single transaction).
-  200 parallel callers produce contiguous, duplicate-free numbers.
-- **Tax SPI**: `TaxRuleProvider` with effective-dated rules; every computed
-  line snapshots the rule it used.
-- **CSV import/export** for products and parties with a row-level validation
-  report, downloadable error CSV and dry-run mode.
-- **Screens**: `/master/products` (list, search, filter, paging, export, import,
-  create/edit form), `/master/parties`, `/master/warehouses` (with racks, bins
-  and docks), `/master/production-lines` (with work centers).
-
-Details: [`docs/P1-MASTER-DATA.md`](docs/P1-MASTER-DATA.md) ·
-[`docs/adr/ADR-002-master-data-scoping-and-numbering.md`](docs/adr/ADR-002-master-data-scoping-and-numbering.md)
-
-### Known P1 gaps
-
-- Detail/edit forms exist for products only; parties, warehouses and production
-  lines are read-only in the UI (data comes from the migration or CSV import).
-- Column chooser, saved filters per user and print view are not implemented.
-- Per-module message bundles (`messages-masterdata.properties`) are not split
-  out yet — all keys live in the two main bundles.
-
-## Modules
-
-```
-ultibiz-spi/     stable extension contracts (plugin descriptors, menu
-                 contributions, tax rule provider) — no framework deps
-ultibiz-core/    domain, jOOQ repositories, application services, Flyway
-                 migrations, numbering engine, tax SPI implementation
-ultibiz-web/     Spring MVC controllers, Thymeleaf views, security, i18n
-                 (WAR packaging for Tomcat 11)
-```
-
-## Build & test
-
-```bash
-mvn -B verify                       # unit tests + WAR
-```
-
-Integration tests run against a real MariaDB and are opt-in (they need a
-database, so they never run by accident in CI). The database is prepared by
-Flyway itself (`clean` + `migrate`), so the schema under test is always the
-migration scripts:
-
-```bash
-mvn -B verify \
-  -Dultibiz.it.jdbcUrl=jdbc:mariadb://127.0.0.1:3311/ultibiz \
-  -Dultibiz.it.user=ultibiz -Dultibiz.it.password=...
-```
-
-## Production deployment (server1.ahadmart.com)
-
-| Piece | Where |
+| | |
 |---|---|
-| Tomcat 11.0.29 | `CATALINA_HOME=/opt/tomcat-11`, `CATALINA_BASE=/home/sufehmi/tomcat-ultibiz` |
-| App | `http://10.10.70.12:18080/` → forwarded from `https://ultibiz.ahadmart.com` |
-| MariaDB 11.8.9 | docker container `ultibiz-mariadb`, `127.0.0.1:3311` |
-| Service | `ultibiz-tomcat.service` (systemd, user `sufehmi`) |
-| Secrets | `/home/sufehmi/projects/ultibiz/.env` (mode 600, git-ignored) |
-| JVM budget | `-Xms96m -Xmx256m -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC` → ~320 MB RSS |
+| Production | `https://ultibiz.ahadmart.com` (Tomcat 11 on `server1.ahadmart.com`, MariaDB container) |
+| Tests | 208 core + 5 web, green on every release |
+| Schema | 17 Flyway migrations, applied in order, never edited afterwards |
+| Identity | local login (RBAC + site scope) or OpenID Connect (Keycloak) |
+| Tenancy | one database per organisation (opt-in), the control database holds the identity |
 
-Redeploy:
+---
+
+## The modules
+
+One application, one set of roles, one audit trail. The domains below are not
+separate products — they share the master data, the chart of accounts, the
+numbering engine and the audit.
+
+| Domain | What it does |
+|---|---|
+| **Master data & multi-site** | products (UOM, barcode, batch/serial, standard cost), parties (tax id, credit limit, payment terms), warehouses with racks/bins/docks, production lines, work centres; the concurrency-safe numbering engine; the tax SPI with effective-dated rules; CSV import/export with a row-level validation report |
+| **Accounting** | hierarchical chart of accounts, fiscal periods (`OPEN`/`CLOSED`/`REOPENED`), the double-entry posting engine (a journal is posted only when it balances, in one transaction, with the period row locked), reversals, tax packs (ID PPN 11 %/2 %/exempt, EU VAT), multi-currency with the functional-currency amounts, trial balance |
+| **AR & AP** | customer invoices and supplier bills (each posting a real journal), receipts and payments with the allocation (chosen document first, then the oldest open ones), ageing, the three-way match with a configurable tolerance, bank/cash accounts, statement import and reconciliation |
+| **Sales, purchase & stock** | sales and purchase orders (discounts, tax per the country pack, credit-limit check), goods receipts, the stock ledger with a **moving average** cost (an issue that would go negative is refused), bills of material, work orders (explode, release, issue, complete) |
+| **Assets & planning** | the asset register with the depreciation rule of the category (straight line, declining balance, units of production), the monthly depreciation run (idempotent per period), the disposal with the gain/loss booked, the maintenance plans, the MRP suggestions (net requirement, safety stock, lead time) |
+| **Data exchange** | the canonical BDM, the inbox/outbox engine (`RECEIVED → PARSED → VALIDATED → MAPPED → APPLIED`, idempotency per partner), the adapters: REST/JSON, CSV, **Peppol UBL** (BIS Billing 3.0, the exact EN 16931 rule id is reported) and **EDI** (X12 850/810 with 997, EDIFACT ORDERS/INVOIC with CONTRL), the console, the dead-letter queue, the retry scheduler under a named lock |
+| **Offline & sync** | the PWA client (IndexedDB outbox, service worker, offline banner), the sync API (`push`/`changes`/`pull`/`status`), the conflict policy (last writer wins for the low-risk fields, a field-level merge, the server wins for the money and the status), the conflict centre, the online-only policy for the postings |
+| **The assistant** | the provider gateway (OpenAI-compatible, Anthropic, a local Echo provider) with timeouts, retries and a circuit breaker, the per-organisation configuration (the external providers are **off** by default), the PII redaction before anything leaves the box, the read tools inline and the write tool as a **proposal with a diff** that a human confirms, the insight rules (negative stock, below safety stock, overdue AR) and the RAG over the knowledge vault with citations |
+| **HRM** | the employee master with the org structure, the contracts, the leave with the working-day computation and the annual balance, the timesheets (≤ 24 h, never in the future, unique per employee/day/project), the expense claims, the H&S incident register, the payroll run with the cost-centre allocation and the CSV export, the GDPR export and the anonymising erasure (the books never change) |
+| **Projects** | projects with the budget and the billing rate, the WBS with the budgeted hours, the milestones (an invoiced milestone **posts a real journal**), the resource assignments with the capacity rule, the cost & revenue tracking (approved timesheets → labour cost → project profitability) |
+| **CRM** | the leads with the source/territory/campaign, the qualification and the conversion into the customer of the master data, the pipeline (it never moves backwards, a lost deal needs a reason), the hand-off to Sales (an opportunity becomes a real draft sales order), the activities, the campaigns |
+| **Dashboard** | the role-aware KPI tiles (every tile carries the permissions that make it visible and has a drill-through link), the thresholds with the alerts, the saved views, the scheduled reports (CSV, print-ready HTML or **native PDF**) with the subscription per user, the insight board |
+| **Knowledge Vault** | the documents with versions (a new version re-indexes the RAG corpus), the folders, the tags, the FULLTEXT search, the legal hold, the retention policies (archive or delete after N months, per folder or organisation) |
+| **Helpdesk** | the queues with their SLA tiers (the deadlines are computed by the **database clock**), the intake from the portal/e-mail/phone, the priority read from the words of the requester, the enforced status flow, the public replies and the internal notes, the escalation (manual and by the SLA monitor), the knowledge suggestions, the customer portal (`/portal/{token}` — the token is the secret, no account needed) |
+| **Reports & e-mail** | the native PDF reports (Flying Saucer + OpenPDF, headless), the delivery per organisation via SMTP or an API provider (Mailchimp Transactional, SendGrid, Mailgun, a generic webhook), the transport configured **by the administrator in the interface** with the secrets sealed (AES-GCM) |
+| **Identity & tenancy** | the local login with the roles, the permissions and the site scope; the OpenID Connect login with the automatic provisioning, the role mapping and the OIDC logout (the form login stays the fallback); one database per organisation with the registry, the routing connection and the provisioning |
+
+---
+
+## The architecture
+
+### The three Maven modules
+
+```
+ultibiz-spi/     the stable extension contracts (the plugin descriptor, the menu
+                 contributions, the tax rule provider, the FX rate provider) —
+                 no framework dependencies
+ultibiz-core/    the domain records, the jOOQ repositories, the application
+                 services, the Flyway migrations, the numbering engine, the
+                 exchange/AI/sync/mail/tenant engines
+ultibiz-web/     the Spring MVC controllers, the Thymeleaf views, the security,
+                 the i18n (en + id) — packaged as a WAR for Tomcat 11
+```
+
+The rule of the layering: the **web layer never touches the database** — it
+calls an application service, which owns the transaction and the audit. The
+repository layer enforces the site scope (`SiteScopedSql`), so a user scoped to
+site A can never read or write site B rows — never the UI.
+
+### The data model
+
+* Every DDL change is a **new Flyway script**; the scripts are self-contained
+  (Flyway runs each one on its own connection).
+* Master data is soft-deleted (`deleted_at`) and version-checked
+  (`row_version`).
+* Money and quantities are `DECIMAL`/`BigDecimal` — never floats; the instants
+  are UTC with an explicit zone at the edges.
+* Every write is audited (`audit_event`); the audit carries the correlation id
+  of the request and, for the assistant, the id of the AI conversation.
+* The numbering engine (per document type + scope, prefix, padding, monthly or
+  fiscal-year restart) is concurrency-safe: 200 parallel callers produce
+  contiguous, duplicate-free numbers.
+
+### The tenancy
+
+The **control database** holds the identity (the organisations, the users, the
+roles, the site scopes) and the **tenant registry**; every tenant owns a
+database with its own business data.
+
+* A filter puts the tenant of the logged-in user on the thread, a routing data
+  source gives the connection, and the thread is always cleaned up.
+* The mode `single` (the default) changes nothing for an existing installation;
+  the mode `database` activates the routing.
+* The provisioning creates the database, runs the migrations on it, removes the
+  demo data, copies the identity and the reference data and registers the
+  tenant. A suspended tenant falls back to the control database.
+* The test provisions a **real** second database and proves that a row written
+  in the tenant is not in the control database.
+
+Details: [`docs/MULTI-TENANT.md`](docs/MULTI-TENANT.md).
+
+### The security
+
+* Spring Security with the RBAC: the roles carry the permission codes, the
+  users carry the site scope; the sessions live in the database (the login
+  survives a redeploy).
+* The rate limit on the public endpoints (the customer portal, the inbound
+  webhook): per IP and path, `429` with `Retry-After`.
+* The secrets are sealed with AES-GCM under the deployment key — the API keys of
+  the assistant, the SMTP password, the API key of the e-mail provider and the
+  secret of the webhook are never stored in clear text and never sent back to
+  the browser.
+* The single sign-on is optional: the OAuth2 client only exists with the
+  profile `sso`, and without it the form login behaves exactly as before.
+
+Details: [`docs/SECURITY.md`](docs/SECURITY.md) · [`docs/SSO.md`](docs/SSO.md).
+
+---
+
+## Getting started
+
+**Requirements**: JDK 21, Maven 3.9+, MariaDB 11.8 (or newer).
+
+```bash
+# the build with the unit tests and the WAR
+mvn -B verify
+
+# the integration tests against a real MariaDB (opt-in: they need a database)
+mvn -B verify \
+  -Dultibiz.it.jdbcUrl=jdbc:mariadb://127.0.0.1:3306/ultibiz_test \
+  -Dultibiz.it.user=ultibiz -Dultibiz.it.password=... \
+  -Dultibiz.it.adminUser=root -Dultibiz.it.adminPassword=...
+```
+
+The integration tests prepare the database themselves (Flyway `clean` +
+`migrate`), so the schema under test is always the migration scripts. The
+tenant test creates a real second database — it needs the administrator
+credentials and is skipped without them.
+
+**The first start**: copy the environment file, fill in the database and the
+administrator password, start the service. The `.env` is read by the systemd
+unit (`EnvironmentFile=`) and is never part of the repository.
+
+```bash
+cp .env.example .env && chmod 600 .env   # the template is in the repository
+```
+
+---
+
+## The configuration
+
+Everything is an environment variable; nothing secret is in the repository.
+The values in the table are the defaults.
+
+| Variable | Meaning |
+|---|---|
+| `ULTIBIZ_DB_HOST` / `ULTIBIZ_DB_PORT` / `ULTIBIZ_DB_NAME` / `ULTIBIZ_DB_USER` / `ULTIBIZ_DB_PASSWORD` | the application database (the default: the MariaDB container on 127.0.0.1:3311, the database `ultibiz`) |
+| `ULTIBIZ_DB_ADMIN_USER` / `ULTIBIZ_DB_ADMIN_PASSWORD` | the administrator of MariaDB — only for the provisioning of a tenant database |
+| `MARIADB_ROOT_PASSWORD` | the root account of MariaDB — the backup and the restore drill |
+| `ULTIBIZ_ADMIN_PASSWORD` | the password of the first administrator |
+| `ULTIBIZ_AI_ENCRYPTION_KEY` | the key under which the secrets are sealed (the AI keys, the e-mail secrets) — without it no secret can be saved |
+| `ULTIBIZ_TENANT_MODE` | `single` (the default) or `database` |
+| `SPRING_PROFILES_ACTIVE=sso` | switches the OpenID Connect login on |
+| `ULTIBIZ_SSO_ISSUER` / `ULTIBIZ_SSO_CLIENT_ID` / `ULTIBIZ_SSO_CLIENT_SECRET` / `ULTIBIZ_SSO_REDIRECT_URI` | the client of the identity provider |
+| `ULTIBIZ_SSO_AUTO_PROVISION` / `ULTIBIZ_SSO_ORGANIZATION` / `ULTIBIZ_SSO_ROLE` / `ULTIBIZ_SSO_ADMIN_ROLES` | the provisioning of the SSO user (the default role `USER`, the administrator roles `ultibiz-admin,admin`) |
+| `ULTIBIZ_EMAIL_PROVIDER` / `ULTIBIZ_SMTP_*` / `ULTIBIZ_MAILGUN_*` / `ULTIBIZ_EMAIL_WEBHOOK_*` | the **fallback** of the e-mail (`mandrill`, `sendgrid`, `mailgun`, `webhook`) — the transport of the interface wins |
+| `ULTIBIZ_RATE_LIMIT_REQUESTS` / `ULTIBIZ_RATE_LIMIT_WINDOW` | the rate limit of the public endpoints (the default: 60 requests per minute) |
+| `ULTIBIZ_REPORT_DIR` | where the scheduled reports are written (the default: `/home/sufehmi/ultibiz-reports`) |
+| `ULTIBIZ_DASHBOARD_DELIVERY_WEBHOOK` / `ULTIBIZ_EXCHANGE_WEBHOOK_SECRET` | the delivery of the reports and the shared secret of the inbound webhook |
+
+The e-mail transport, the sender address and the credentials are configured by
+the administrator in **Administration → E-mail settings** (`/admin/settings/email`)
+— the environment variables stay the fallback for the installations without a
+configuration in the interface.
+
+---
+
+## The operation
+
+Full operational notes: [`docs/RUNBOOK.md`](docs/RUNBOOK.md) ·
+[`docs/OPERATIONS.md`](docs/OPERATIONS.md).
+
+### The deployment
+
+One ssh invocation: backup the WAR, replace it, delete the exploded directory
+(a failed startup has to be able to roll back), restart, read the health.
 
 ```bash
 cd /home/sufehmi/projects/ultibiz
-JAVA_HOME=/opt/jdk-21 MAVEN_OPTS="-Xmx700m" mvn -B verify
+JAVA_HOME=/opt/jdk-21 MAVEN_OPTS="-Xmx900m" bash tools/release-check.sh
+cp /home/sufehmi/tomcat-ultibiz/webapps/ROOT.war /home/sufehmi/tomcat-ultibiz/ROOT.war.bak
 cp ultibiz-web/target/ultibiz-web-*.war /home/sufehmi/tomcat-ultibiz/webapps/ROOT.war
 rm -rf /home/sufehmi/tomcat-ultibiz/webapps/ROOT
 systemctl restart ultibiz-tomcat
-curl -s http://10.10.70.12:18080/actuator/health
+curl -s http://10.10.70.12:18080/actuator/health        # {"status":"UP"}
 ```
 
-`tools/install-server1.sh` provisions the host (Maven, Temurin JDK 21,
-Tomcat 11, MariaDB container, systemd unit) idempotently.
-Full operational notes: [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
-Architecture decisions: [`docs/adr/`](docs/adr/).
+**Never** sync the tree without `--exclude '.env'` — a `rsync --delete` without
+it removes the secrets of the service.
 
-## Auditing
+### The release gate
+
+`tools/release-check.sh` runs the i18n audit, the build with all the tests and
+the migration check. The same gate runs in CI (`.github/workflows/release-check.yml`)
+on every push with a MariaDB service container.
+
+### The backup and the restore drill
+
+`tools/backup.sh` writes a consistent dump (`--single-transaction`) plus the
+report files; `tools/restore-drill.sh` restores it into a scratch database and
+compares the row counts table by table — the drill is green on the production
+instance. Both run as root with the MariaDB root account.
+
+### The health
+
+`/actuator/health` is public and shows the status; the **details** (the name of
+the failed indicator) are only for the administrators. `/actuator/health/liveness`
+and `/actuator/health/readiness` are the probes.
+
+### The schedulers
+
+The report scheduler (daily/weekly/monthly), the insight engine, the retention
+run of the knowledge vault, the SLA monitor of the helpdesk and the retry batch
+of the exchange — every one of them runs under a MariaDB named lock, so two
+replicas never do the same work twice.
+
+### The single sign-on
+
+The provider is a container on the deploy host:
 
 ```bash
-tools/i18n-audit.sh    # every key present in en + id, every #{key} resolvable
+bash deploy/keycloak/start-keycloak.sh          # start (generates the secret)
+bash deploy/keycloak/start-keycloak.sh status
+bash deploy/keycloak/start-keycloak.sh stop
 ```
 
-## Conventions
+It listens on `127.0.0.1:8180`. For real users the provider has to be reachable
+over **https** (Keycloak 26 marks the session cookie as *secure*), so the
+reverse proxy has to forward a public hostname to it — that forwarding lives
+outside this repository. The end-to-end test drives the whole flow:
+`python3 tools/sso-smoke-test.py`.
 
-- **After every completed phase: update this README and push to GitHub.**
-- The authoring prompts (`prompts/`, `docs/ULTIBIZ_*_PROMPT*.md`) are
-  internal working documents and are deliberately **not** published to GitHub.
-- No secret ever enters the repository; `.env` is server-side only and is
-  excluded from every sync (`rsync --exclude '.env'`).
-- Money and quantities are `DECIMAL`/`BigDecimal`, never floats; instants are
-  UTC with an explicit zone at the edges.
-- Every write is audited; every DDL change is a new Flyway script.
-- Master data is soft-deleted (`deleted_at`) and version-checked (`row_version`).
-- Site scoping is enforced in the repository layer — a user scoped to site A
-  can never read or write site B rows.
+### The tenants
 
-## Directory map
+**Administration → Tenants** (`/admin/settings/tenants`, the administrators
+only): the list of the tenants, the provisioning and the suspension. The mode
+stays `single` until the provisioning, the isolation and the rollback path are
+verified — then `ULTIBIZ_TENANT_MODE=database` activates the routing.
+
+---
+
+## The development
+
+### The conventions
+
+* **After every completed change: update this README and push to GitHub.**
+* The authoring prompts are internal working documents and are deliberately
+  **not** published.
+* No secret ever enters the repository; `.env` is server-side only.
+* Every DDL change is a new Flyway script; every write is audited.
+* The site scoping is enforced in the repository layer — never in the UI.
+* The i18n: every key exists in `messages.properties` **and**
+  `messages_id.properties`; `tools/i18n-audit.sh` must report PASS.
+
+### The test strategy
+
+* **Unit tests** for the domain, the policy and the engine rules.
+* **Integration tests** against a real MariaDB for the repository and the
+  posting engine — the database is prepared by Flyway itself.
+* **Web tests**: a slice test for the controllers and a **full context test**
+  (`ApplicationContextTest`) that boots the whole application against the test
+  database — a slice test does not load the domain layer and would not catch a
+  broken wiring.
+
+### The directory map
 
 ```
 ultibiz-web/src/main/resources/
-  templates/          Thymeleaf views (fragments/layout.html shell + master data)
-  static/css|js/      app.css, theme.js, app.js
-  static/vendor/      vendored Bootstrap 5.3.3 + htmx 2.0.4 (+ SHA256SUMS)
-  messages*.properties  i18n (en default, id)
+  templates/            the Thymeleaf views (the fragments/layout.html shell)
+  static/css|js/        app.css, theme.js, app.js
+  static/vendor/        the vendored Bootstrap 5.3.3 + htmx 2.0.4 (+ SHA256SUMS)
+  messages*.properties  the i18n (en default, id)
 ultibiz-core/src/main/resources/db/migration/
-  V202611250001__ultibiz_baseline.sql   org/site/user/RBAC/audit + Spring Session
-  V202611250002__p1_master_data.sql     master data, country/tax config, numbering
-deploy/               Dockerfile, docker-compose, k8s manifests
-tools/                install-server1.sh, dev-up.sh, backup.sh, restore.sh, vendor-assets.sh
-docs/                 OPERATIONS.md, adr/
+  V202611250001__ultibiz_baseline.sql   the organisation, the site, the user,
+                                         the RBAC, the audit, Spring Session
+  V202611250002__p1_master_data.sql     the master data, the country/tax
+                                         configuration, the numbering
+  …                                     one script per slice, in order
+deploy/                 the Dockerfile, the compose file, the k8s manifests,
+                        the keycloak realm + the start script
+tools/                  install-server1.sh, dev-up.sh, release-check.sh,
+                        i18n-audit.sh, backup.sh, restore.sh, restore-drill.sh,
+                        sso-smoke-test.py, vendor-assets.sh
+docs/                   the guides and the ADRs
 ```
+
+---
+
+## The documentation
+
+| Document | Content |
+|---|---|
+| [`docs/OPERATIONS.md`](docs/OPERATIONS.md) | the installation, the services, the deploy, the rollback |
+| [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | the day-to-day: the deploy, the backup, the schedulers, the secrets, the troubleshooting |
+| [`docs/SECURITY.md`](docs/SECURITY.md) | what protects the application and where the limits are |
+| [`docs/SSO.md`](docs/SSO.md) | the single sign-on: the flow, the provisioning, the provider |
+| [`docs/MULTI-TENANT.md`](docs/MULTI-TENANT.md) | one database per organisation: the control database, the routing, the provisioning |
+| [`docs/P1-MASTER-DATA.md`](docs/P1-MASTER-DATA.md) | the master data, the multi-site, the numbering |
+| [`docs/P2-ACCOUNTING.md`](docs/P2-ACCOUNTING.md) | the posting engine, the periods, the taxes, the currency |
+| [`docs/RELEASE-NOTES-P8.md`](docs/RELEASE-NOTES-P8.md) · [`docs/RELEASE-NOTES-P12-P13.md`](docs/RELEASE-NOTES-P12-P13.md) | what the plugins, the SSO and the multi-tenant brought |
+| [`docs/adr/`](docs/adr/) | ADR-001 (the decisions of the foundation), ADR-002 (the scoping and the numbering), ADR-003 (the posting engine) — read them before changing the rules |
+
+## The state and the next steps
+
+Everything below is implemented, deployed, verified on the production instance
+and pushed to GitHub: the master data and the multi-site, the accounting with
+the tax packs and the currency, the AR/AP with the bank reconciliation, the
+orders/stock/manufacturing, the assets and the MRP, the data exchange with
+Peppol and EDI, the offline sync, the assistant, the six plugins (HRM, projects,
+CRM, dashboard, knowledge vault, helpdesk), the hardening and the release
+tooling, the PDF reports and the e-mail, the e-mail settings in the interface,
+the single sign-on and the multi-tenant on the database level.
+
+The open items, honestly:
+
+* **the public URL of the identity provider** — the proxy has to forward a
+  hostname to the Keycloak container and the provider has to speak https; until
+  then the SSO stays switched off and the form login is used;
+* **the mode `database` of the tenants** — it stays `single` until the
+  provisioning, the isolation and the rollback path are drilled on the
+  production instance;
+* **the known gaps**: the stock transfer and the cycle count, the routing and
+  the capacity planning, the back-flushing, the lot/serial traceability, the
+  year-end closing and the carry-forward, the approval thresholds, the
+  detail forms for the parties and the warehouses;
+* **the native vector index** of the RAG — MariaDB 11.8 ships the `VECTOR`
+  type but not the vector functions, so the retrieval runs on the text copy of
+  the embedding and the fulltext index (portable, a little slower).
