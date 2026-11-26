@@ -37,6 +37,13 @@ The public endpoints are limited per IP address and per path:
 - **The encryption key** of the AI provider keys is read from the environment;
   without it no key is stored.
 
+## The administration
+
+- The pages under `/admin/**` need the role **ADMIN** (`hasRole("ADMIN")`).
+- The e-mail credentials (the SMTP password, the API key, the webhook secret) are
+  **sealed with AES-GCM** under the deployment key and are never sent back to the
+  browser: the form only tells whether a secret is set.
+
 ## The secrets
 
 The secrets live in `.env` (mode 600, owner sufehmi) on the server; they are

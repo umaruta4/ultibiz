@@ -52,6 +52,8 @@ public class SecurityConfig {
                 // the customer portal: the token in the link is the secret
                 .requestMatchers("/portal/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/me/theme").authenticated()
+                // the administration pages are for the administrators
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/actuator/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
             .formLogin(login -> login

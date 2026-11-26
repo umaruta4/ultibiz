@@ -10,6 +10,7 @@ The day-to-day operations of the production instance on `server1.ahadmart.com`.
 | The database | MariaDB in Docker, container `ultibiz-mariadb`, port 3311 | `docker exec ultibiz-mariadb mariadb -u ultibiz -p"$ULTIBIZ_DB_PASSWORD" -e "SELECT 1;" ultibiz` |
 | The source | `/home/sufehmi/projects/ultibiz` (git, `main`) | `git -C /home/sufehmi/projects/ultibiz log --oneline -1` |
 | The secrets | `/home/sufehmi/projects/ultibiz/.env` (mode 600, owner sufehmi) | `stat -c "%a %U" /home/sufehmi/projects/ultibiz/.env` |
+| The e-mail settings | the interface: Administration → E-mail settings (`/admin/settings/email`) | `SELECT provider, from_address, is_active FROM email_provider_config;` |
 | The reports | `/home/sufehmi/ultibiz-reports` | `ls -lt /home/sufehmi/ultibiz-reports | head` |
 | The backups | `/var/backups/ultibiz` (the last 14 dumps) | `ls -lt /var/backups/ultibiz | head` |
 | The logs | `journalctl -u ultibiz-tomcat` | `journalctl -u ultibiz-tomcat --since "1 hour ago" | grep -i error` |
@@ -90,6 +91,10 @@ job twice.
 
 A new value is written to `.env` (mode 600) and the service is restarted. Never
 write a secret in the git repository, in a log or in a ticket.
+
+The **e-mail settings** are the exception: they live in the database (the secrets
+sealed with `ULTIBIZ_AI_ENCRYPTION_KEY`) and are changed by the administrator in
+the interface — the environment variables are only the fallback.
 
 ## When something is wrong
 

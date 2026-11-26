@@ -42,7 +42,9 @@ public class ReportScheduler {
                 if (!files.isEmpty()) {
                     LOG.info("The report scheduler generated {} file(s)", files.size());
                     for (var file : files) {
-                        mailer.send(file, dashboard.subscriptionEmail(file.subscriptionId()));
+                        long subscriptionId = file.subscriptionId() == null ? 0L : file.subscriptionId();
+                        mailer.send(file, dashboard.subscriptionEmail(subscriptionId),
+                                dashboard.subscriptionOrganization(subscriptionId));
                     }
                 }
             } finally {

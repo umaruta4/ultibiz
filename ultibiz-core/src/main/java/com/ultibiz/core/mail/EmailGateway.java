@@ -3,8 +3,7 @@ package com.ultibiz.core.mail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Picks the API e-mail provider and sends through it. The gateway is empty
+/** Picks the API e-mail provider and sends through it. The gateway is empty
  * when no provider is configured (the SMTP path in the web layer stays the
  * default then).
  */
@@ -30,6 +29,17 @@ public class EmailGateway {
             LOG.warn("The e-mail provider {} is selected but not configured — the e-mail is inactive",
                     transport.name());
         }
+    }
+
+    /** The gateway of the settings of an organisation (the secrets come decrypted). */
+    public static EmailGateway from(EmailSettings settings) {
+        if (settings == null) {
+            return new EmailGateway("", "", "", "", "", "", "us", "", "");
+        }
+        return new EmailGateway(settings.providerName(), settings.fromAddress(),
+                settings.apiKey(), settings.apiKey(), settings.mailgunDomain(),
+                settings.apiKey(), settings.mailgunRegion(), settings.webhookUrl(),
+                settings.webhookSecret());
     }
 
     /** Whether an API provider is selected and ready. */

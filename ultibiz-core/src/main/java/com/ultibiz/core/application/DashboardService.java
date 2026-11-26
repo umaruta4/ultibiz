@@ -238,6 +238,11 @@ public class DashboardService {
         return dashboards.subscriptionEmail(subscriptionId);
     }
 
+    /** The organisation of a subscription. */
+    public long subscriptionOrganization(long subscriptionId) {
+        return dashboards.subscriptionOrganization(subscriptionId);
+    }
+
     public List<DashboardRepository.ReportFile> reportFiles(SiteScope scope, long userId) {
         return dashboards.reportFiles(scope.organizationId(), userId);
     }

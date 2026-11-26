@@ -43,6 +43,16 @@ Node/npm/bundler). Runs at root context (`/`).
 
 Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 
+## What P11 delivers (the e-mail settings in the interface)
+
+The e-mail transport is **configured by the administrator in the interface** — no file to edit, no restart:
+
+- **Administration → E-mail settings** (`/admin/settings/email`, the administrators only): the transport, the sender address and the credentials, with a **test e-mail** button.
+- The transport: **none**, **SMTP**, **Mailchimp Transactional (Mandrill)**, **SendGrid**, **Mailgun** (region `us`/`eu`) or a **generic webhook** — the fields of the chosen one appear, the others hide.
+- The secrets (the SMTP password, the API key, the webhook secret) are **sealed with AES-GCM** under the deployment key: they are never stored in clear text and never sent back to the browser (the form only says "the secret is set"). An empty field keeps the stored secret; a checkbox removes it.
+- The settings are **per organisation** and take effect immediately — the report scheduler reads them at every run.
+- The environment variables (`ULTIBIZ_EMAIL_PROVIDER`, `ULTIBIZ_SMTP_*`, ...) stay the **fallback** for the installations without a configuration in the interface.
+
 ## What P10 delivers
 
 - **Native PDF reports**: a scheduled report with the format `PDF` is rendered to a real PDF (Flying Saucer + OpenPDF, headless) — verified on production: `HEADCOUNT-2026-11-26.pdf` (PDF 1.5). The report values are **XML-escaped** (a value like `Research & <Development>` can no longer break the report — or inject HTML).

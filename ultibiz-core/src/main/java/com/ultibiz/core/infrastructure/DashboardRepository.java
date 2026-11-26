@@ -172,6 +172,14 @@ public class DashboardRepository {
                 String.class, subscriptionId);
     }
 
+    /** The organisation of a subscription. */
+    public long subscriptionOrganization(long subscriptionId) {
+        Long organizationId = jdbc.queryForObject(
+                "SELECT organization_id FROM dash_report_subscription WHERE id = ?",
+                Long.class, subscriptionId);
+        return organizationId == null ? 0L : organizationId;
+    }
+
     // ------------------------------------------------------------------ report files
 
     public long addReportFile(long organizationId, Long subscriptionId, String reportCode,

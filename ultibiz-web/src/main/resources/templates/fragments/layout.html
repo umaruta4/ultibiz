@@ -232,7 +232,16 @@
             <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/helpdesk}" th:text="#{hd.tickets}">Tickets</a></li>
           </ul>
         </li>
-        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.admin}">Admin</a></li>
+        <li class="nav-item ub-nav-group">
+          <button class="nav-link ub-nav-toggle" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#nav-admin" aria-expanded="false" aria-controls="nav-admin">
+            <span th:text="#{nav.admin}">Admin</span>
+            <span class="ub-chevron" aria-hidden="true">&#9656;</span>
+          </button>
+          <ul class="nav flex-column collapse" id="nav-admin">
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/admin/settings/email}" th:text="#{mail.settings}">E-mail settings</a></li>
+          </ul>
+        </li>
       </ul>
     </nav>
 

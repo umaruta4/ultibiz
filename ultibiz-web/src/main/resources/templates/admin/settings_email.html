@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{mail.settings}">E-mail settings</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{mail.settings}">E-mail settings</h1>
+    </div>
+
+    <p class="text-muted small mb-3" th:text="#{mail.settingsIntro}">
+      The transport of the report e-mail. The secrets are sealed — they are never shown again.
+    </p>
+
+    <div class="row g-3">
+      <div class="col-12 col-lg-7">
+        <form method="post" th:action="@{/admin/settings/email}" class="ub-card vstack gap-3">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+          <div>
+            <label class="form-label small fw-semibold" for="provider" th:text="#{mail.provider}">Transport</label>
+            <select class="form-select form-select-sm" id="provider" name="provider" onchange="ubMailProvider()">
+              <option th:each="p : ${providers}" th:value="${p}" th:text="${p}"
+                      th:selected="${p == settings.provider}">PROVIDER</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label small fw-semibold" for="fromAddress" th:text="#{mail.fromAddress}">Sender address</label>
+            <input class="form-control form-control-sm" id="fromAddress" name="fromAddress" type="email"
+                   th:value="${settings.fromAddress}" placeholder="ultibiz@example.com">
+          </div>
+
+          <fieldset class="border rounded p-2" id="ub-smtp" th:style="${settings.provider == 'SMTP' ? '' : 'display:none'}">
+            <legend class="small fw-semibold px-1">SMTP</legend>
+            <div class="row g-2">
+              <div class="col-8">
+                <input class="form-control form-control-sm" name="smtpHost" type="text"
+                       th:value="${settings.smtpHost}" placeholder="smtp.example.com">
+              </div>
+              <div class="col-4">
+                <input class="form-control form-control-sm" name="smtpPort" type="number"
+                       th:value="${settings.smtpPort}" placeholder="587">
+              </div>
+              <div class="col-6">
+                <input class="form-control form-control-sm" name="smtpUser" type="text"
+                       th:value="${settings.smtpUser}" placeholder="user">
+              </div>
+              <div class="col-6">
+                <input class="form-control form-control-sm" name="smtpPassword" type="password"
+                       placeholder="password" th:placeholder="${smtpKeySet} ? #{mail.secretStored} : #{mail.secret}">
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="border rounded p-2" id="ub-api" th:style="${settings.provider == 'MANDRILL' or settings.provider == 'SENDGRID' or settings.provider == 'MAILGUN' ? '' : 'display:none'}">
+            <legend class="small fw-semibold px-1">API</legend>
+            <div class="row g-2">
+              <div class="col-12" id="ub-api-key">
+                <input class="form-control form-control-sm" name="apiKey" type="password"
+                       th:placeholder="${apiKeySet} ? #{mail.secretStored} : #{mail.apiKey}">
+              </div>
+              <div class="col-8" id="ub-mailgun-domain" th:style="${settings.provider == 'MAILGUN' ? '' : 'display:none'}">
+                <input class="form-control form-control-sm" name="mailgunDomain" type="text"
+                       th:value="${settings.mailgunDomain}" placeholder="mg.example.com">
+              </div>
+              <div class="col-4" id="ub-mailgun-region" th:style="${settings.provider == 'MAILGUN' ? '' : 'display:none'}">
+                <select class="form-select form-select-sm" name="mailgunRegion">
+                  <option value="us" th:selected="${settings.mailgunRegion == 'us'}">us</option>
+                  <option value="eu" th:selected="${settings.mailgunRegion == 'eu'}">eu</option>
+                </select>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="border rounded p-2" id="ub-webhook" th:style="${settings.provider == 'WEBHOOK' ? '' : 'display:none'}">
+            <legend class="small fw-semibold px-1">Webhook</legend>
+            <div class="row g-2">
+              <div class="col-12">
+                <input class="form-control form-control-sm" name="webhookUrl" type="url"
+                       th:value="${settings.webhookUrl}" placeholder="https://example.com/email">
+              </div>
+              <div class="col-12">
+                <input class="form-control form-control-sm" name="webhookSecret" type="password"
+                       th:placeholder="${webhookSecretSet} ? #{mail.secretStored} : #{mail.secret}">
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="active" name="active" value="true"
+                   th:checked="${settings.active}">
+            <label class="form-check-label small" for="active" th:text="#{mail.active}">Active</label>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="clearSecrets" name="clearSecrets" value="true">
+            <label class="form-check-label small" for="clearSecrets" th:text="#{mail.clearSecrets}">
+              Remove the stored secrets
+            </label>
+          </div>
+
+          <div>
+            <button class="btn btn-sm btn-primary" type="submit" th:text="#{mail.save}">Save</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="col-12 col-lg-5">
+        <div class="ub-card">
+          <h2 class="fs-6 mb-2" th:text="#{mail.testTitle}">Test e-mail</h2>
+          <form method="post" th:action="@{/admin/settings/email/test}" class="vstack gap-2">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input class="form-control form-control-sm" name="email" type="email" th:placeholder="#{dash.email}">
+            <button class="btn btn-sm btn-outline-primary" type="submit" th:text="#{mail.testSend}">Send the test</button>
+          </form>
+        </div>
+
+        <div class="ub-card mt-3">
+          <h2 class="fs-6 mb-2" th:text="#{mail.providersTitle}">The transports</h2>
+          <ul class="small text-muted mb-0 ps-3">
+            <li><strong>SMTP</strong> — <span th:text="#{mail.help.smtp}">your own relay</span></li>
+            <li><strong>MANDRILL</strong> — <span th:text="#{mail.help.mandrill}">Mailchimp Transactional</span></li>
+            <li><strong>SENDGRID</strong> — <span th:text="#{mail.help.sendgrid}">SendGrid</span></li>
+            <li><strong>MAILGUN</strong> — <span th:text="#{mail.help.mailgun}">Mailgun</span></li>
+            <li><strong>WEBHOOK</strong> — <span th:text="#{mail.help.webhook}">any other provider</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function ubMailProvider() {
+        var value = document.getElementById('provider').value;
+        document.getElementById('ub-smtp').style.display = value === 'SMTP' ? '' : 'none';
+        document.getElementById('ub-api').style.display =
+          (value === 'MANDRILL' || value === 'SENDGRID' || value === 'MAILGUN') ? '' : 'none';
+        document.getElementById('ub-webhook').style.display = value === 'WEBHOOK' ? '' : 'none';
+        document.getElementById('ub-mailgun-domain').style.display =
+          value === 'MAILGUN' ? '' : 'none';
+        document.getElementById('ub-mailgun-region').style.display =
+          value === 'MAILGUN' ? '' : 'none';
+      }
+      ubMailProvider();
+    </script>
+  </th:block>
+</body>
+</html>
