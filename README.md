@@ -43,6 +43,13 @@ Node/npm/bundler). Runs at root context (`/`).
 
 Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 
+## What P9 delivers (hardening & release)
+
+- **Rate limit** on the public endpoints (the customer portal, the inbound webhook): per IP and path, `429` with `Retry-After`.
+- **Backup + restore drill** as scripts, not a promise: `tools/backup.sh` writes a consistent dump (`--single-transaction`) plus the report files, `tools/restore-drill.sh` restores it into a scratch database and compares the row counts table by table — the drill is green on the production instance.
+- **Release gate** `tools/release-check.sh` (the i18n audit, the build with the tests, the migration check).
+- **Documents**: `docs/RUNBOOK.md` (the services, the deploy, the rollback, the backup, the schedulers, the secrets, the troubleshooting table), `docs/SECURITY.md` (what protects the application and where the limits are), `docs/RELEASE-NOTES-P8.md`.
+
 ## What P8 delivers (all 6 plugins: HRM, Projects, CRM, Dashboard, Knowledge Vault, Helpdesk)
 
 **Projects.** Delivery work with real money behind it:

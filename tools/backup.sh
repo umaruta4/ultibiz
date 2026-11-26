@@ -1,42 +1,30 @@
 #!/usr/bin/env bash
-# backup.sh — dump the ultibiz MariaDB database to a timestamped .sql.gz in
-# /home/sufehmi/backups and keep the most recent 14 backups.
+# The backup: the database (a consistent dump) and the report files.
+# Usage: tools/backup.sh [target directory]
 set -euo pipefail
 
-CONTAINER="${ULTIBIZ_DB_CONTAINER:-ultibiz-mariadb}"
+TARGET="${1:-/var/backups/ultibiz}"
+STAMP="$(date +%Y%m%d-%H%M%S)"
+mkdir -p "${TARGET}"
+
 DB_NAME="${ULTIBIZ_DB_NAME:-ultibiz}"
-BACKUP_DIR="${ULTIBIZ_BACKUP_DIR:-/home/sufehmi/backups}"
-KEEP=14
+DB_USER="${ULTIBIZ_DB_USER:-ultibiz}"
+DB_PASSWORD="${ULTIBIZ_DB_PASSWORD:?the database password is required}"
+DB_HOST="${ULTIBIZ_DB_HOST:-127.0.0.1}"
+DB_PORT="${ULTIBIZ_DB_PORT:-3311}"
 
-usage() {
-  echo "Usage: $0" >&2
-  echo "Dumps database '${DB_NAME}' from container '${CONTAINER}' into ${BACKUP_DIR}." >&2
-  echo "Overrides: ULTIBIZ_DB_CONTAINER, ULTIBIZ_DB_NAME, ULTIBIZ_BACKUP_DIR env vars." >&2
-  exit "${1:-1}"
-}
+echo "-- the database dump"
+docker exec ultibiz-mariadb mariadb-dump -u "${DB_USER}" -p"${DB_PASSWORD}" \
+  --single-transaction --routines --triggers --events \
+  "${DB_NAME}" | gzip > "${TARGET}/ultibiz-${STAMP}.sql.gz"
 
-if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
-  usage 0
-fi
-if [[ $# -gt 0 ]]; then
-  usage 1
+echo "-- the report files"
+if [ -d "${ULTIBIZ_REPORT_DIR:-/home/sufehmi/ultibiz-reports}" ]; then
+  tar czf "${TARGET}/reports-${STAMP}.tar.gz" -C "${ULTIBIZ_REPORT_DIR:-/home/sufehmi/ultibiz-reports}" .
 fi
 
-mkdir -p "${BACKUP_DIR}"
+# keep the last 14 backups
+ls -1t "${TARGET}"/ultibiz-*.sql.gz 2>/dev/null | tail -n +15 | xargs -r rm -f
 
-ts="$(date +%Y%m%d-%H%M%S)"
-out="${BACKUP_DIR}/ultibiz-${ts}.sql.gz"
-
-echo "Dumping ${DB_NAME} from ${CONTAINER} -> ${out}"
-docker exec "${CONTAINER}" mariadb-dump \
-  --user=root --password="${MARIADB_ROOT_PASSWORD:-$(docker exec "${CONTAINER}" printenv MARIADB_ROOT_PASSWORD)}" \
-  --single-transaction --routines --triggers --databases "${DB_NAME}" \
-  | gzip -9 > "${out}"
-
-echo "Backup written: ${out} ($(du -h "${out}" | cut -f1))"
-
-# Retain only the newest ${KEEP} backups.
-ls -1t "${BACKUP_DIR}"/ultibiz-*.sql.gz 2>/dev/null | tail -n +$((KEEP + 1)) | while read -r old; do
-  echo "Pruning old backup: ${old}"
-  rm -f "${old}"
-done
+echo "-- the backup is ready: ${TARGET}/ultibiz-${STAMP}.sql.gz"
+ls -lh "${TARGET}"/ultibiz-${STAMP}.sql.gz

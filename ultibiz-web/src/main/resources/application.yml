@@ -50,6 +50,10 @@ ultibiz:
     # shared secret the partners send in the X-Exchange-Secret header
     webhook-secret: ${ULTIBIZ_EXCHANGE_WEBHOOK_SECRET:}
     retry-delay-ms: ${ULTIBIZ_EXCHANGE_RETRY_DELAY_MS:60000}
+  rate-limit:
+    # the public endpoints (customer portal, inbound webhook) are limited
+    requests: ${ULTIBIZ_RATE_LIMIT_REQUESTS:60}
+    window-seconds: ${ULTIBIZ_RATE_LIMIT_WINDOW:60}
   dashboard:
     # where the scheduled reports are written
     report-dir: ${ULTIBIZ_REPORT_DIR:/home/sufehmi/ultibiz-reports}
