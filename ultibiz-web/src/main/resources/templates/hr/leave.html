@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{hr.leave}">HRM</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{hr.leave}">Leave</h1>
+      <div class="btn-group btn-group-sm">
+        <a class="btn btn-outline-secondary" th:classappend="${status == null} ? 'active'" th:href="@{/hr/leave}" th:text="#{hr.all}">All</a>
+        <a class="btn btn-outline-secondary" th:classappend="${status == 'SUBMITTED'} ? 'active'" th:href="@{/hr/leave(status='SUBMITTED')}" th:text="#{hr.submitted}">Submitted</a>
+        <a class="btn btn-outline-secondary" th:classappend="${status == 'APPROVED'} ? 'active'" th:href="@{/hr/leave(status='APPROVED')}" th:text="#{hr.approved}">Approved</a>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-lg-4">
+        <div class="ub-card">
+          <h2 class="fs-6 mb-3" th:text="#{hr.requestLeave}">Request leave</h2>
+          <form method="post" th:action="@{/hr/leave}" class="vstack gap-2">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <select class="form-select form-select-sm" name="employeeId" required>
+              <option th:each="employee : ${employees}" th:value="${employee.id}"
+                      th:text="${employee.displayName()}">Employee</option>
+            </select>
+            <select class="form-select form-select-sm" name="leaveType" required>
+              <option th:each="type : ${leaveTypes}" th:value="${type.code}"
+                      th:text="${type.name} + ' (' + ${type.annualAllowance} + ')'">Type</option>
+            </select>
+            <label class="ub-muted small mb-0" th:text="#{hr.from}">From</label>
+            <input class="form-control form-control-sm" name="startDate" type="date" required>
+            <label class="ub-muted small mb-0" th:text="#{hr.to}">To</label>
+            <input class="form-control form-control-sm" name="endDate" type="date" required>
+            <input class="form-control form-control-sm" name="reason" th:placeholder="#{hr.reason}">
+            <button class="btn btn-sm btn-primary" type="submit" th:text="#{hr.submit}">Submit</button>
+          </form>
+        </div>
+      </div>
+      <div class="col-12 col-lg-8">
+        <div class="ub-card">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th th:text="#{hr.employee}">Employee</th>
+                <th th:text="#{hr.range}">Range</th>
+                <th th:text="#{hr.days}">Days</th>
+                <th th:text="#{hr.status}">Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="request : ${requests}">
+                <td th:text="${request.employeeId}">1</td>
+                <td th:text="${request.startDate} + ' → ' + ${request.endDate}">range</td>
+                <td th:text="${request.days}">3</td>
+                <td><span class="badge" th:classappend="${request.status == 'APPROVED'} ? 'text-bg-success' : (${request.status == 'REJECTED'} ? 'text-bg-danger' : 'text-bg-warning')"
+                          th:text="${request.status}">SUBMITTED</span></td>
+                <td class="text-end">
+                  <form th:if="${request.status == 'SUBMITTED'}" method="post"
+                        th:action="@{/hr/leave/{id}/decide(id=${request.id})}" class="d-inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <input type="hidden" name="approve" value="true">
+                    <button class="btn btn-sm btn-success" type="submit" th:text="#{hr.approve}">Approve</button>
+                  </form>
+                  <form th:if="${request.status == 'SUBMITTED'}" method="post"
+                        th:action="@{/hr/leave/{id}/decide(id=${request.id})}" class="d-inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <input type="hidden" name="approve" value="false">
+                    <button class="btn btn-sm btn-outline-danger" type="submit" th:text="#{hr.reject}">Reject</button>
+                  </form>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </th:block>
+</body>
+</html>

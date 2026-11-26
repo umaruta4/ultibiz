@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{hr.employees}">HRM</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{hr.employees}">Employees</h1>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-lg-4">
+        <div class="ub-card">
+          <h2 class="fs-6 mb-3" th:text="#{hr.hire}">Hire an employee</h2>
+          <form method="post" th:action="@{/hr/employees}" class="vstack gap-2">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input class="form-control form-control-sm" name="employeeNo" th:placeholder="#{hr.employeeNo}" required>
+            <div class="d-flex gap-2">
+              <input class="form-control form-control-sm" name="firstName" th:placeholder="#{hr.firstName}" required>
+              <input class="form-control form-control-sm" name="lastName" th:placeholder="#{hr.lastName}" required>
+            </div>
+            <input class="form-control form-control-sm" name="personalEmail" type="email" th:placeholder="#{hr.personalEmail}">
+            <input class="form-control form-control-sm" name="phone" th:placeholder="#{hr.phone}">
+            <input class="form-control form-control-sm" name="nationalId" th:placeholder="#{hr.nationalId}">
+            <label class="ub-muted small mb-0" th:text="#{hr.hireDate}">Hire date</label>
+            <input class="form-control form-control-sm" name="hireDate" type="date">
+            <button class="btn btn-sm btn-primary" type="submit" th:text="#{hr.hire}">Hire</button>
+          </form>
+        </div>
+      </div>
+      <div class="col-12 col-lg-8">
+        <div class="ub-card">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th th:text="#{hr.employeeNo}">No</th>
+                <th th:text="#{hr.name}">Name</th>
+                <th th:text="#{hr.hireDate}">Hired</th>
+                <th th:text="#{hr.status}">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="employee : ${employees}">
+                <td th:text="${employee.employeeNo}">EMP-0001</td>
+                <td><a th:href="@{/hr/employees/{id}(id=${employee.id})}"
+                       th:text="${employee.displayName()}">Name</a></td>
+                <td th:text="${employee.hireDate}">2026-01-01</td>
+                <td><span class="badge" th:classappend="${employee.status == 'ACTIVE'} ? 'text-bg-success' : 'text-bg-secondary'"
+                          th:text="${employee.status}">ACTIVE</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </th:block>
+</body>
+</html>

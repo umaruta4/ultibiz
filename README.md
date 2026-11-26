@@ -43,6 +43,20 @@ Node/npm/bundler). Runs at root context (`/`).
 
 Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 
+## What P8 delivers (plugin 1 of 6: HRM)
+
+**HRM.** The people side of the company, end to end:
+
+- **Employee master** with org structure (positions with parents, departments, cost centres) — the personal fields (e-mail, phone, national id, birth date) are explicitly in the GDPR scope.
+- **Contracts**: permanent / fixed-term / intern / freelance with salary, currency and weekly hours.
+- **Leave**: working-day computation (weekends skipped), overlap detection against open requests, and a per-type annual balance enforced on submit; approve/reject with audit.
+- **Timesheets**: ≤ 24 h per entry, never in the future, unique per (employee, day, project) — approved hours feed the project costs.
+- **Expense claims**: the claim total is always the sum of its lines; submit → approve/reject → (paid in accounting).
+- **H&S incident register** (injury / near-miss / equipment / environment with severity, OPEN → INVESTIGATING → CLOSED) — feeds the helpdesk.
+- **Payroll run & export**: one run per period (YYYY-MM), net = base + allowances − deductions, cost-centre allocation by approved hours, CSV export; an exported run is closed forever.
+- **GDPR hooks**: personal-data export (JSON) and erasure that anonymises the personal fields while the financial rows (contracts, payroll, expenses) stay untouched — the books never change; every erasure is logged.
+- Permission matrix, 11 business-rule unit tests, one end-to-end IT (hire → leave → timesheet → expense → payroll export → GDPR), i18n EN+ID, dark-mode UI.
+
 ## What P7 delivers
 
 **AI assistant.** The assistant lives in a drawer on every screen (header button or Ctrl/⌘K), answers questions about the data with citations, and can prepare write actions — a human always confirms them.

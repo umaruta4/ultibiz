@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{hr.expenses}">HRM</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{hr.expenses}">Expense claims</h1>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-lg-4">
+        <div class="ub-card">
+          <h2 class="fs-6 mb-3" th:text="#{hr.submitExpense}">Submit a claim</h2>
+          <form method="post" th:action="@{/hr/expenses}" class="vstack gap-2">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <select class="form-select form-select-sm" name="employeeId" required>
+              <option th:each="employee : ${employees}" th:value="${employee.id}"
+                      th:text="${employee.displayName()}">Employee</option>
+            </select>
+            <input class="form-control form-control-sm" name="claimNo" th:placeholder="#{hr.claimNo}" required>
+            <input class="form-control form-control-sm" name="expenseDate" type="date" required>
+            <select class="form-select form-select-sm" name="category">
+              <option value="TRAVEL" th:text="#{hr.catTravel}">Travel</option>
+              <option value="MEAL" th:text="#{hr.catMeal}">Meal</option>
+              <option value="SUPPLIES" th:text="#{hr.catSupplies}">Supplies</option>
+              <option value="OTHER" th:text="#{hr.catOther}">Other</option>
+            </select>
+            <input class="form-control form-control-sm" name="amount" type="number" step="0.01" min="0.01" th:placeholder="#{hr.amount}" required>
+            <input class="form-control form-control-sm" name="receiptRef" th:placeholder="#{hr.receiptRef}">
+            <button class="btn btn-sm btn-primary" type="submit" th:text="#{hr.submit}">Submit</button>
+          </form>
+        </div>
+      </div>
+      <div class="col-12 col-lg-8">
+        <div class="ub-card">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th th:text="#{hr.claimNo}">Claim</th>
+                <th th:text="#{hr.total}">Total</th>
+                <th th:text="#{hr.currency}">Currency</th>
+                <th th:text="#{hr.status}">Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="claim : ${claims}">
+                <td th:text="${claim.claimNo}">EXP-1</td>
+                <td th:text="${claim.total}">0</td>
+                <td th:text="${claim.currency}">IDR</td>
+                <td><span class="badge" th:classappend="${claim.status == 'APPROVED'} ? 'text-bg-success' : (${claim.status == 'REJECTED'} ? 'text-bg-danger' : 'text-bg-warning')"
+                          th:text="${claim.status}">SUBMITTED</span></td>
+                <td class="text-end">
+                  <form th:if="${claim.status == 'SUBMITTED'}" method="post"
+                        th:action="@{/hr/expenses/{id}/decide(id=${claim.id})}" class="d-inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <input type="hidden" name="approve" value="true">
+                    <button class="btn btn-sm btn-success" type="submit" th:text="#{hr.approve}">Approve</button>
+                  </form>
+                  <form th:if="${claim.status == 'SUBMITTED'}" method="post"
+                        th:action="@{/hr/expenses/{id}/decide(id=${claim.id})}" class="d-inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <input type="hidden" name="approve" value="false">
+                    <button class="btn btn-sm btn-outline-danger" type="submit" th:text="#{hr.reject}">Reject</button>
+                  </form>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </th:block>
+</body>
+</html>

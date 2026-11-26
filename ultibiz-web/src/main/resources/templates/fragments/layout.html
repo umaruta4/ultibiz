@@ -163,7 +163,21 @@
             <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/ai/usage}" th:text="#{ai.usage}">Usage</a></li>
           </ul>
         </li>
-        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.hrm}">HRM</a></li>
+        <li class="nav-item ub-nav-group">
+          <button class="nav-link ub-nav-toggle" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#nav-hrm" aria-expanded="false" aria-controls="nav-hrm">
+            <span th:text="#{nav.hrm}">HRM</span>
+            <span class="ub-chevron" aria-hidden="true">&#9656;</span>
+          </button>
+          <ul class="nav flex-column collapse" id="nav-hrm">
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/hr}" th:text="#{hr.employees}">Employees</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/hr/leave}" th:text="#{hr.leave}">Leave</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/hr/timesheets}" th:text="#{hr.timesheets}">Timesheets</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/hr/expenses}" th:text="#{hr.expenses}">Expenses</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/hr/incidents}" th:text="#{hr.incidents}">Incidents</a></li>
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/hr/payroll}" th:text="#{hr.payroll}">Payroll</a></li>
+          </ul>
+        </li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.projects}">Projects</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.crm}">CRM</a></li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.knowledge}">Knowledge</a></li>
