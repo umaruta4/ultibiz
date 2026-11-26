@@ -18,7 +18,7 @@ public final class SettingDefinitions {
     static {
         // the database — a change needs a restart of the application
         ALL.add(SettingDefinition.text("db.host", "The database host", GROUP_DATABASE,
-                "ULTIBIZ_DB_HOST", "127.0.0.1", true, "the host of the MariaDB server"));
+                "ULTIBIZ_DB_HOST", "localhost", true, "the host of the MariaDB server"));
         ALL.add(SettingDefinition.number("db.port", "The database port", GROUP_DATABASE,
                 "ULTIBIZ_DB_PORT", "3306", true, ""));
         ALL.add(SettingDefinition.text("db.name", "The database name", GROUP_DATABASE,
@@ -47,8 +47,8 @@ public final class SettingDefinitions {
 
         // the single sign-on
         ALL.add(SettingDefinition.bool("sso.enabled", "The single sign-on is active", GROUP_SSO,
-                "SPRING_PROFILES_ACTIVE", "false", true,
-                "the profile sso of Spring Boot; without it the form login is used"));
+                "ULTIBIZ_SSO_ENABLED", "false", true,
+                "the profile sso of Spring Boot does the same; without it the form login is used"));
         ALL.add(SettingDefinition.text("sso.issuer", "The issuer of the identity provider",
                 GROUP_SSO, "ULTIBIZ_SSO_ISSUER", "", true, "the URL of the realm of Keycloak"));
         ALL.add(SettingDefinition.text("sso.client.id", "The client id", GROUP_SSO,

@@ -135,8 +135,9 @@ Details: [`docs/MULTI-TENANT.md`](docs/MULTI-TENANT.md).
   the assistant, the SMTP password, the API key of the e-mail provider and the
   secret of the webhook are never stored in clear text and never sent back to
   the browser.
-* The single sign-on is optional: the OAuth2 client only exists with the
-  profile `sso`, and without it the form login behaves exactly as before.
+* The single sign-on is optional: the switch is in the interface (Administration
+  → System settings) or in the profile `sso`; without it the form login behaves
+  exactly as before.
 
 Details: [`docs/SECURITY.md`](docs/SECURITY.md) · [`docs/SSO.md`](docs/SSO.md).
 
@@ -178,16 +179,50 @@ cp .env.example .env && chmod 600 .env   # the template is in the repository
 (`/admin/settings/system`, the administrators only). The environment variable
 stays the fallback — a value changed in the interface wins until it is removed,
 and a value that is read at the start of the application takes effect after a
-restart (the interface marks those items).
+restart (the table marks those items).
 
-| The group | The items | The effect |
-|---|---|---|
-| **The database** | the host, the port, the name, the user, the password; the administrator of MariaDB for the provisioning | after a restart |
-| **The tenancy** | `single` or `database` (one database per organisation) | after a restart |
-| **The single sign-on** | the switch, the issuer, the client id/secret, the redirect URI, the automatic provisioning, the organisation, the role, the administrator roles | the switch and the client after a restart; the provisioning at runtime |
-| **The e-mail (the fallback)** | the transport, the SMTP relay, the sender address, the domain and the region of Mailgun, the webhook | at runtime; the transport of the organisation (E-mail settings) wins |
-| **The security** | the password of the first administrator, the key that seals the secrets, the shared secret of the exchange, the rate limit | the rate limit and the shared secret at runtime; the keys after a restart |
-| **The reports** | the directory of the scheduled reports, the delivery webhook | at runtime |
+The 34 items below are the whole configuration of the deployment. The table is
+generated from the registry of the application (`SettingDefinitions`), so it
+cannot drift away from the code.
+
+<!-- begin: the configuration table -->
+| The group | The item | The environment variable | The default | The effect |
+|---|---|---|---|---|
+| The database | The database host (`db.host`) | `ULTIBIZ_DB_HOST` | `localhost` | after a restart |
+| The database | The database port (`db.port`) | `ULTIBIZ_DB_PORT` | `3306` | after a restart |
+| The database | The database name (`db.name`) | `ULTIBIZ_DB_NAME` | `ultibiz` | after a restart |
+| The database | The database user (`db.user`) | `ULTIBIZ_DB_USER` | `ultibiz` | after a restart |
+| The database | The database password *(sealed)* (`db.password`) | `ULTIBIZ_DB_PASSWORD` | `-` | after a restart |
+| The database | The administrator of the database (`db.admin.user`) | `ULTIBIZ_DB_ADMIN_USER` | `root` | after a restart |
+| The database | The password of the database administrator *(sealed)* (`db.admin.password`) | `ULTIBIZ_DB_ADMIN_PASSWORD` | `-` | after a restart |
+| The security | The password of the first administrator *(sealed)* (`admin.password`) | `ULTIBIZ_ADMIN_PASSWORD` | `-` | after a restart |
+| The security | The key that seals the secrets *(sealed)* (`ai.encryption.key`) | `ULTIBIZ_AI_ENCRYPTION_KEY` | `-` | after a restart |
+| The tenancy | The mode of the tenancy (`tenant.mode`) | `ULTIBIZ_TENANT_MODE` | `single` | after a restart |
+| The single sign-on | The single sign-on is active (`sso.enabled`) | `ULTIBIZ_SSO_ENABLED` | `false` | after a restart |
+| The single sign-on | The issuer of the identity provider (`sso.issuer`) | `ULTIBIZ_SSO_ISSUER` | `-` | after a restart |
+| The single sign-on | The client id (`sso.client.id`) | `ULTIBIZ_SSO_CLIENT_ID` | `ultibiz` | after a restart |
+| The single sign-on | The client secret *(sealed)* (`sso.client.secret`) | `ULTIBIZ_SSO_CLIENT_SECRET` | `-` | after a restart |
+| The single sign-on | The redirect URI (`sso.redirect.uri`) | `ULTIBIZ_SSO_REDIRECT_URI` | `-` | after a restart |
+| The single sign-on | The automatic provisioning (`sso.auto.provision`) | `ULTIBIZ_SSO_AUTO_PROVISION` | `true` | at runtime |
+| The single sign-on | The organisation of a new user (`sso.organization`) | `ULTIBIZ_SSO_ORGANIZATION` | `ACME` | at runtime |
+| The single sign-on | The role of a new user (`sso.role`) | `ULTIBIZ_SSO_ROLE` | `USER` | at runtime |
+| The single sign-on | The administrator roles of the provider (`sso.admin.roles`) | `ULTIBIZ_SSO_ADMIN_ROLES` | `ultibiz-admin,admin` | at runtime |
+| The e-mail (the fallback of the environment) | The transport (`email.provider`) | `ULTIBIZ_EMAIL_PROVIDER` | `-` | at runtime |
+| The e-mail (the fallback of the environment) | The SMTP host (`email.smtp.host`) | `ULTIBIZ_SMTP_HOST` | `-` | at runtime |
+| The e-mail (the fallback of the environment) | The SMTP port (`email.smtp.port`) | `ULTIBIZ_SMTP_PORT` | `587` | at runtime |
+| The e-mail (the fallback of the environment) | The SMTP user (`email.smtp.user`) | `ULTIBIZ_SMTP_USER` | `-` | at runtime |
+| The e-mail (the fallback of the environment) | The SMTP password *(sealed)* (`email.smtp.password`) | `ULTIBIZ_SMTP_PASSWORD` | `-` | at runtime |
+| The e-mail (the fallback of the environment) | The sender address (`email.from`) | `ULTIBIZ_SMTP_FROM` | `ultibiz@localhost` | at runtime |
+| The e-mail (the fallback of the environment) | The domain of Mailgun (`email.mailgun.domain`) | `ULTIBIZ_MAILGUN_DOMAIN` | `-` | at runtime |
+| The e-mail (the fallback of the environment) | The region of Mailgun (`email.mailgun.region`) | `ULTIBIZ_MAILGUN_REGION` | `us` | at runtime |
+| The e-mail (the fallback of the environment) | The URL of the e-mail webhook (`email.webhook.url`) | `ULTIBIZ_EMAIL_WEBHOOK_URL` | `-` | at runtime |
+| The e-mail (the fallback of the environment) | The secret of the e-mail webhook *(sealed)* (`email.webhook.secret`) | `ULTIBIZ_EMAIL_WEBHOOK_SECRET` | `-` | at runtime |
+| The security | The shared secret of the exchange *(sealed)* (`exchange.webhook.secret`) | `ULTIBIZ_EXCHANGE_WEBHOOK_SECRET` | `-` | at runtime |
+| The security | The requests of the rate limit (`rate.limit.requests`) | `ULTIBIZ_RATE_LIMIT_REQUESTS` | `60` | at runtime |
+| The security | The window of the rate limit (seconds) (`rate.limit.window`) | `ULTIBIZ_RATE_LIMIT_WINDOW` | `60` | at runtime |
+| The reports | The directory of the reports (`report.dir`) | `ULTIBIZ_REPORT_DIR` | `reports` | at runtime |
+| The reports | The delivery webhook (`dashboard.delivery.webhook`) | `ULTIBIZ_DASHBOARD_DELIVERY_WEBHOOK` | `-` | at runtime |
+<!-- end: the configuration table -->
 
 The secrets (the passwords, the API keys, the secrets of the webhooks) are
 sealed with AES-GCM under the deployment key. They are **never** stored in
@@ -200,9 +235,13 @@ The e-mail transport, the sender address and the credentials of an organisation
 stay in **Administration → E-mail settings** (`/admin/settings/email`) — the
 settings of the organisation win over the fallback of the deployment.
 
+Three values of the environment file belong to the tools and not to the
+application, so they are not in the table: the root account of MariaDB (the
+backup and the restore drill), the administrator of the identity provider and
+the password of the demo user of the end-to-end test.
+
 The template of the environment file is in the repository (`.env.example`); the
 file itself is server-side only and is never committed.
-
 ---
 
 ## The operation
@@ -230,15 +269,16 @@ it removes the secrets of the service.
 
 ### The release gate
 
-`tools/release-check.sh` runs the i18n audit, the build with all the tests and
-the migration check. The same gate runs in CI (`.github/workflows/release-check.yml`)
+`tools/release-check.sh` runs the i18n audit, the check that this README still
+matches the configuration registry, the build with all the tests and the
+migration check. The same gate runs in CI (`.github/workflows/release-check.yml`)
 on every push with a MariaDB service container.
 
 ### The backup and the restore drill
 
 `tools/backup.sh` writes a consistent dump (`--single-transaction`) plus the
 report files; `tools/restore-drill.sh` restores it into a scratch database and
-compares the row counts table by table — the drill is green on the production
+compares the row counts table by table — the drill is green on the deployed
 instance. Both run as root with the MariaDB root account.
 
 ### The health
@@ -291,6 +331,10 @@ verified — then `ULTIBIZ_TENANT_MODE=database` activates the routing.
 * The site scoping is enforced in the repository layer — never in the UI.
 * The i18n: every key exists in `messages.properties` **and**
   `messages_id.properties`; `tools/i18n-audit.sh` must report PASS.
+* The configuration table in this README is **generated** from the registry:
+  after adding an item to `SettingDefinitions`, run
+  `python3 tools/readme-config-table.py`. The release gate runs it with
+  `--check`, so the documentation cannot drift away from the code.
 
 ### The test strategy
 
@@ -320,7 +364,7 @@ deploy/                 the Dockerfile, the compose file, the k8s manifests,
                         the keycloak realm + the start script
 tools/                  install-server1.sh, dev-up.sh, release-check.sh,
                         i18n-audit.sh, backup.sh, restore.sh, restore-drill.sh,
-                        sso-smoke-test.py, vendor-assets.sh
+                        sso-smoke-test.py, readme-config-table.py, vendor-assets.sh
 docs/                   the guides and the ADRs
 ```
 
@@ -342,8 +386,7 @@ docs/                   the guides and the ADRs
 
 ## The state and the next steps
 
-Everything below is implemented, deployed, verified on the production instance
-and pushed to GitHub: the master data and the multi-site, the accounting with
+Everything below is implemented, deployed, verified and pushed to GitHub: the master data and the multi-site, the accounting with
 the tax packs and the currency, the AR/AP with the bank reconciliation, the
 orders/stock/manufacturing, the assets and the MRP, the data exchange with
 Peppol and EDI, the offline sync, the assistant, the six plugins (HRM, projects,
@@ -357,8 +400,8 @@ The open items, honestly:
   hostname to the Keycloak container and the provider has to speak https; until
   then the SSO stays switched off and the form login is used;
 * **the mode `database` of the tenants** — it stays `single` until the
-  provisioning, the isolation and the rollback path are drilled on the
-  production instance;
+  provisioning, the isolation and the rollback path are drilled on a live
+  instance;
 * **the known gaps**: the stock transfer and the cycle count, the routing and
   the capacity planning, the back-flushing, the lot/serial traceability, the
   year-end closing and the carry-forward, the approval thresholds, the

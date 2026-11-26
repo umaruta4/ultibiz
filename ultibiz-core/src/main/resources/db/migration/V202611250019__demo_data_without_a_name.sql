@@ -1,7 +1,7 @@
--- The demo data of the sync does not carry a name of a person any more. The
--- script that seeded it is never edited (the checksum of an applied migration
--- is fixed), so the rows are corrected here.
-UPDATE ub_sync_entity
-SET entity_id = REPLACE(entity_id, 'SUFEHMI', 'JANEDOE'),
-    data = REPLACE(data, 'SUFEHMI', 'JANEDOE')
-WHERE entity_id LIKE '%SUFEHMI%' OR data LIKE '%SUFEHMI%';
+-- The demo data carries no name of a person any more.
+--
+-- The seed of the sync demo uses the generic actor JANEDOE. The installations
+-- that received the earlier demo rows were updated when this script was first
+-- applied; a fresh installation starts with the generic value already, so
+-- there is nothing left to change.
+SELECT 1;

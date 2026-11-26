@@ -9,6 +9,9 @@ echo "== UltiBiz release check =="
 echo "-- the i18n audit"
 bash tools/i18n-audit.sh
 
+echo "-- the documentation matches the configuration registry"
+python3 tools/readme-config-table.py --check
+
 echo "-- the build with the tests (the integration tests need the test database)"
 : "${ULTIBIZ_IT_JDBC_URL:=jdbc:mariadb://localhost:3311/ultibiz_test}"
 : "${ULTIBIZ_IT_USER:=ultibiz}"

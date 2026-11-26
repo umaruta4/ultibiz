@@ -125,6 +125,10 @@ public class SystemSettingsEnvironmentPostProcessor implements EnvironmentPostPr
         if (value != null && !value.isBlank()) {
             return "true".equalsIgnoreCase(value.trim());
         }
+        String flag = System.getenv("ULTIBIZ_SSO_ENABLED");
+        if (flag != null && !flag.isBlank()) {
+            return "true".equalsIgnoreCase(flag.trim());
+        }
         String profiles = System.getenv("SPRING_PROFILES_ACTIVE");
         return profiles != null && profiles.contains("sso");
     }
