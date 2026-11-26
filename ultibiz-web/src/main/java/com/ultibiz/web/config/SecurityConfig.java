@@ -49,6 +49,8 @@ public class SecurityConfig {
                 // the inbound webhook is called by partners, not by users:
                 // it carries its own shared secret (checked in the controller)
                 .requestMatchers("/api/exchange/inbound/**").permitAll()
+                // the customer portal: the token in the link is the secret
+                .requestMatchers("/portal/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/me/theme").authenticated()
                 .requestMatchers("/actuator/**").hasRole("ADMIN")
                 .anyRequest().authenticated())

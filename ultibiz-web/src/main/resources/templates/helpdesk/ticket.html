@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{hd.ticket}">Helpdesk</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0">
+        <span th:text="${ticket.ticketNo}">TKT</span> · <span th:text="${ticket.subject}">subject</span>
+      </h1>
+      <div class="d-flex gap-2">
+        <span class="badge" th:classappend="${ticket.priority == 'URGENT'} ? 'text-bg-danger' : 'text-bg-secondary'"
+              th:text="${ticket.priority}">NORMAL</span>
+        <span class="badge text-bg-light border" th:text="${ticket.status}">NEW</span>
+        <a class="btn btn-sm btn-outline-secondary" th:href="@{/portal/{token}(token=${ticket.portalToken})}"
+           th:text="#{hd.portalLink}">Customer link</a>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-md-3"><div class="ub-card h-100">
+        <div class="ub-muted small" th:text="#{hd.responseDue}">Response due</div>
+        <div class="fs-6" th:text="${ticket.slaResponseDue}">—</div></div></div>
+      <div class="col-6 col-md-3"><div class="ub-card h-100">
+        <div class="ub-muted small" th:text="#{hd.resolveDue}">Resolution due</div>
+        <div class="fs-6" th:text="${ticket.slaResolveDue}">—</div></div></div>
+      <div class="col-6 col-md-3"><div class="ub-card h-100">
+        <div class="ub-muted small" th:text="#{hd.slaState}">SLA</div>
+        <div class="fs-6">
+          <span class="badge" th:classappend="${sla.resolveBreached} ? 'text-bg-danger' : 'text-bg-success'"
+                th:text="${sla.resolveBreached} ? #{hd.breached} : #{hd.onTime}">On time</span>
+        </div></div></div>
+      <div class="col-6 col-md-3"><div class="ub-card h-100">
+        <div class="ub-muted small" th:text="#{hd.escalationLevel}">Escalation</div>
+        <div class="fs-6" th:text="${sla.escalationLevel}">0</div></div></div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-lg-4">
+        <div class="ub-card mb-3">
+          <h2 class="fs-6 mb-2" th:text="#{hd.reply}">Reply</h2>
+          <form method="post" th:action="@{/helpdesk/{id}/reply(id=${ticket.id})}" class="vstack gap-2">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <textarea class="form-control form-control-sm" name="body" rows="4" required
+                      th:placeholder="#{hd.message}"></textarea>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="isPublic" value="true" id="reply-public" checked>
+              <label class="form-check-label" for="reply-public" th:text="#{hd.publicReply}">Visible to the customer</label>
+            </div>
+            <button class="btn btn-sm btn-primary" type="submit" th:text="#{hd.send}">Send</button>
+          </form>
+        </div>
+
+        <div class="ub-card mb-3">
+          <h2 class="fs-6 mb-2" th:text="#{hd.actions}">Actions</h2>
+          <div class="vstack gap-2">
+            <form method="post" th:action="@{/helpdesk/{id}/triage(id=${ticket.id})}" class="d-flex gap-1">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <select class="form-select form-select-sm" name="priority">
+                <option value="LOW">LOW</option><option value="NORMAL">NORMAL</option>
+                <option value="HIGH">HIGH</option><option value="URGENT">URGENT</option>
+              </select>
+              <button class="btn btn-sm btn-outline-secondary" type="submit" th:text="#{hd.triage}">Triage</button>
+            </form>
+            <form method="post" th:action="@{/helpdesk/{id}/assign(id=${ticket.id})}" class="d-flex gap-1">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <input class="form-control form-control-sm" name="assigneeId" type="number" min="1"
+                     th:placeholder="#{hd.employeeId}" required>
+              <button class="btn btn-sm btn-outline-secondary" type="submit" th:text="#{hd.assign}">Assign</button>
+            </form>
+            <form method="post" th:action="@{/helpdesk/{id}/suggest(id=${ticket.id})}">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <button class="btn btn-sm btn-outline-secondary w-100" type="submit" th:text="#{hd.suggest}">Suggest knowledge</button>
+            </form>
+            <form method="post" th:action="@{/helpdesk/{id}/resolve(id=${ticket.id})}">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <button class="btn btn-sm btn-success w-100" type="submit" th:text="#{hd.resolve}">Resolve</button>
+            </form>
+            <form method="post" th:action="@{/helpdesk/{id}/close(id=${ticket.id})}">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <button class="btn btn-sm btn-outline-success w-100" type="submit" th:text="#{hd.close}">Close</button>
+            </form>
+            <form method="post" th:action="@{/helpdesk/{id}/escalate(id=${ticket.id})}" class="d-flex gap-1">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <input class="form-control form-control-sm" name="reason" th:placeholder="#{hd.reason}" required>
+              <button class="btn btn-sm btn-outline-danger" type="submit" th:text="#{hd.escalate}">Escalate</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="ub-card">
+          <h2 class="fs-6 mb-2" th:text="#{hd.suggestions}">Suggested knowledge</h2>
+          <ul class="list-unstyled small mb-0">
+            <li th:each="suggestion : ${suggestions}">
+              <a th:href="@{/knowledge/{id}(id=${suggestion.documentId})}"
+                 th:text="'document #' + ${suggestion.documentId}">document</a>
+            </li>
+            <li th:if="${#lists.isEmpty(suggestions)}" class="ub-muted" th:text="#{hd.noSuggestions}">No suggestions</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-8">
+        <div class="ub-card">
+          <h2 class="fs-6 mb-2" th:text="#{hd.activity}">Activity</h2>
+          <ul class="list-unstyled small mb-0">
+            <li th:each="activity : ${activities}" class="py-1 border-bottom">
+              <span class="badge text-bg-light border" th:text="${activity.type}">NOTE</span>
+              <span th:text="${activity.body}">body</span>
+              <div class="ub-muted">
+                <span th:text="${activity.author}">author</span> ·
+                <span th:text="${activity.createdAt}">at</span>
+                <span th:if="${activity.isPublic}" class="badge text-bg-success" th:text="#{hd.public}">public</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </th:block>
+</body>
+</html>

@@ -222,7 +222,16 @@
             <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/knowledge}" th:text="#{kv.title}">Knowledge vault</a></li>
           </ul>
         </li>
-        <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.helpdesk}">Helpdesk</a></li>
+        <li class="nav-item ub-nav-group">
+          <button class="nav-link ub-nav-toggle" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#nav-helpdesk" aria-expanded="false" aria-controls="nav-helpdesk">
+            <span th:text="#{nav.helpdesk}">Helpdesk</span>
+            <span class="ub-chevron" aria-hidden="true">&#9656;</span>
+          </button>
+          <ul class="nav flex-column collapse" id="nav-helpdesk">
+            <li class="nav-item"><a class="nav-link ps-3 py-1 small" th:href="@{/helpdesk}" th:text="#{hd.tickets}">Tickets</a></li>
+          </ul>
+        </li>
         <li class="nav-item"><a class="nav-link" href="#" th:text="#{nav.admin}">Admin</a></li>
       </ul>
     </nav>

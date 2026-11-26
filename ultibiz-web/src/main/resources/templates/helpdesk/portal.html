@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="#{hd.portal}">Ticket</title>
+  <link rel="stylesheet" href="/vendor/bootstrap.min.css">
+</head>
+<body class="bg-light">
+<div class="container py-5" style="max-width: 46rem">
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+          <h1 class="h4 mb-1" th:text="${ticket.subject}">Subject</h1>
+          <div class="text-secondary small">
+            <span th:text="${ticket.ticketNo}">TKT</span> ·
+            <span th:text="${ticket.status}">NEW</span> ·
+            <span th:text="${ticket.createdAt}">at</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="border rounded p-3 mb-3 bg-white">
+        <div th:text="${ticket.description}">description</div>
+      </div>
+
+      <h2 class="h6" th:text="#{hd.activity}">Activity</h2>
+      <ul class="list-unstyled mb-3">
+        <li th:each="activity : ${activities}" class="border rounded p-2 mb-2 bg-white">
+          <div th:text="${activity.body}">body</div>
+          <div class="text-secondary small">
+            <span th:text="${activity.author}">author</span> ·
+            <span th:text="${activity.createdAt}">at</span>
+          </div>
+        </li>
+        <li th:if="${#lists.isEmpty(activities)}" class="text-secondary small"
+            th:text="#{hd.noActivity}">No activity yet</li>
+      </ul>
+
+      <form method="post" th:action="@{/portal/{token}(token=${ticket.portalToken})}" class="vstack gap-2">
+        <textarea class="form-control" name="body" rows="3" th:placeholder="#{hd.replyPlaceholder}" required></textarea>
+        <button class="btn btn-primary align-self-start" type="submit" th:text="#{hd.send}">Send</button>
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>

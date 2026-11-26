@@ -43,7 +43,7 @@ Node/npm/bundler). Runs at root context (`/`).
 
 Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 
-## What P8 delivers (plugins 1–5 of 6: HRM, Projects, CRM, Dashboard, Knowledge Vault)
+## What P8 delivers (all 6 plugins: HRM, Projects, CRM, Dashboard, Knowledge Vault, Helpdesk)
 
 **Projects.** Delivery work with real money behind it:
 
@@ -53,6 +53,17 @@ Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 - **Resource assignments** with a capacity rule: an employee is never allocated more than the weekly hours of their contract across overlapping assignments (the conflict is refused with the exact numbers).
 - **Cost & revenue tracking**: the approved HRM timesheets of the project code become the labour cost at the contractual hourly rate (base / (weekly hours × 4.348125)); billable hours at the billing rate plus invoiced milestones become the revenue; the report shows hours, cost, revenue, profitability and budget usage per project and per employee.
 - One end-to-end IT: timesheet approved in HRM → project cost → milestone invoiced → journal posted → profitability.
+
+**Helpdesk.** The service desk, from the customer to the SLA:
+
+- **Queues with SLA tiers**: every queue carries its own response and resolution window (support: 8 h / 72 h, critical: 1 h / 8 h) and its escalation window; the deadlines are computed by the **database clock**, so the application server may run in another time zone.
+- **Intake** from the portal, e-mail, phone or chat; the priority is read from the words of the requester ("server down" → URGENT).
+- **Triage, assignment and the status flow**: NEW → TRIAGED → ASSIGNED → IN_PROGRESS → WAITING → RESOLVED → CLOSED (a resolved ticket can be reopened); the flow is enforced.
+- **Replies** in two flavours: public (the customer sees it, it stamps the first response) and internal notes (the team only).
+- **Escalation**: a manual escalation with a reason, and an SLA monitor that escalates the overdue tickets (named lock, so two replicas never escalate twice).
+- **Knowledge suggestions**: the vault documents that match the subject and the description of the request are attached to the ticket.
+- **Customer portal**: a read-only page per ticket — the token in the link is the secret, no account needed (`/portal/{token}`); the customer sees the public thread and can reply.
+- One end-to-end IT: intake (SLA of the queue) → urgent detection → triage → assignment → public reply → resolve/close → portal link → knowledge suggestions → SLA monitor.
 
 **Knowledge Vault.** The company memory, with the rules of a real document store:
 
@@ -82,6 +93,17 @@ Details: schema migration `V202611250005__p2b_ar_ap.sql`.
 - One end-to-end IT: lead → qualify → convert (party + opportunity) → pipeline rules → hand-off (real sales order) → won → activities.
 
 **HRM.** The people side of the company, end to end:
+
+**Helpdesk.** The service desk, from the customer to the SLA:
+
+- **Queues with SLA tiers**: every queue carries its own response and resolution window (support: 8 h / 72 h, critical: 1 h / 8 h) and its escalation window; the deadlines are computed by the **database clock**, so the application server may run in another time zone.
+- **Intake** from the portal, e-mail, phone or chat; the priority is read from the words of the requester ("server down" → URGENT).
+- **Triage, assignment and the status flow**: NEW → TRIAGED → ASSIGNED → IN_PROGRESS → WAITING → RESOLVED → CLOSED (a resolved ticket can be reopened); the flow is enforced.
+- **Replies** in two flavours: public (the customer sees it, it stamps the first response) and internal notes (the team only).
+- **Escalation**: a manual escalation with a reason, and an SLA monitor that escalates the overdue tickets (named lock, so two replicas never escalate twice).
+- **Knowledge suggestions**: the vault documents that match the subject and the description of the request are attached to the ticket.
+- **Customer portal**: a read-only page per ticket — the token in the link is the secret, no account needed (`/portal/{token}`); the customer sees the public thread and can reply.
+- One end-to-end IT: intake (SLA of the queue) → urgent detection → triage → assignment → public reply → resolve/close → portal link → knowledge suggestions → SLA monitor.
 
 **Knowledge Vault.** The company memory, with the rules of a real document store:
 

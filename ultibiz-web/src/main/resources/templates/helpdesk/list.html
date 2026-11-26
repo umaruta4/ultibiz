@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: shell(~{:: title}, ~{:: #page-content})}">
+<head>
+  <title th:text="#{hd.tickets}">Helpdesk</title>
+</head>
+<body>
+  <th:block id="page-content">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <h1 class="fs-4 mb-0" th:text="#{hd.tickets}">Tickets</h1>
+      <div class="btn-group btn-group-sm">
+        <a class="btn btn-outline-secondary" th:classappend="${status == null} ? 'active'" th:href="@{/helpdesk}" th:text="#{hd.all}">All</a>
+        <a class="btn btn-outline-secondary" th:classappend="${status == 'NEW'} ? 'active'" th:href="@{/helpdesk(status='NEW')}" th:text="#{hd.new}">New</a>
+        <a class="btn btn-outline-secondary" th:classappend="${status == 'IN_PROGRESS'} ? 'active'" th:href="@{/helpdesk(status='IN_PROGRESS')}" th:text="#{hd.inProgress}">In progress</a>
+        <a class="btn btn-outline-secondary" th:classappend="${status == 'RESOLVED'} ? 'active'" th:href="@{/helpdesk(status='RESOLVED')}" th:text="#{hd.resolved}">Resolved</a>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-lg-4">
+        <div class="ub-card">
+          <h2 class="fs-6 mb-2" th:text="#{hd.newTicket}">New ticket</h2>
+          <form method="post" th:action="@{/helpdesk}" class="vstack gap-2">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input class="form-control form-control-sm" name="subject" th:placeholder="#{hd.subject}" required>
+            <textarea class="form-control form-control-sm" name="description" rows="4" required
+                      th:placeholder="#{hd.description}"></textarea>
+            <input class="form-control form-control-sm" name="requesterName" th:placeholder="#{hd.requester}">
+            <input class="form-control form-control-sm" name="requesterEmail" type="email" th:placeholder="#{hd.email}">
+            <select class="form-select form-select-sm" name="queueId">
+              <option th:each="queue : ${queues}" th:value="${queue.id}" th:text="${queue.name}">Queue</option>
+            </select>
+            <input class="form-control form-control-sm" name="category" th:placeholder="#{hd.category}">
+            <button class="btn btn-sm btn-primary" type="submit" th:text="#{hd.create}">Create</button>
+          </form>
+        </div>
+      </div>
+      <div class="col-12 col-lg-8">
+        <div class="ub-card">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th th:text="#{hd.number}">Number</th>
+                <th th:text="#{hd.subject}">Subject</th>
+                <th th:text="#{hd.priority}">Priority</th>
+                <th th:text="#{hd.status}">Status</th>
+                <th th:text="#{hd.sla}">SLA</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="ticket : ${tickets}">
+                <td><a th:href="@{/helpdesk/{id}(id=${ticket.id})}" th:text="${ticket.ticketNo}">TKT</a></td>
+                <td th:text="${ticket.subject}">subject</td>
+                <td><span class="badge"
+                          th:classappend="${ticket.priority == 'URGENT'} ? 'text-bg-danger' : (${ticket.priority == 'HIGH'} ? 'text-bg-warning' : 'text-bg-secondary')"
+                          th:text="${ticket.priority}">NORMAL</span></td>
+                <td th:text="${ticket.status}">NEW</td>
+                <td class="small">
+                  <span th:if="${ticket.escalatedAt != null}" class="badge text-bg-danger"
+                        th:text="#{hd.escalated}">Escalated</span>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(tickets)}">
+                <td colspan="5" class="ub-muted" th:text="#{hd.noTickets}">No tickets</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </th:block>
+</body>
+</html>
