@@ -364,7 +364,8 @@ deploy/                 the Dockerfile, the compose file, the k8s manifests,
                         the keycloak realm + the start script
 tools/                  install-server1.sh, dev-up.sh, release-check.sh,
                         i18n-audit.sh, backup.sh, restore.sh, restore-drill.sh,
-                        sso-smoke-test.py, readme-config-table.py, vendor-assets.sh
+                        sso-smoke-test.py, readme-config-table.py, vendor-assets.sh,
+                        qa-e2e.py, qa-static-audit.py, qa-instance-setup.sh
 docs/                   the guides and the ADRs
 ```
 
@@ -382,6 +383,7 @@ docs/                   the guides and the ADRs
 | [`docs/MASTER-DATA.md`](docs/MASTER-DATA.md) | the master data, the multi-site, the numbering |
 | [`docs/ACCOUNTING.md`](docs/ACCOUNTING.md) | the posting engine, the periods, the taxes, the currency |
 | [`docs/RELEASE-NOTES-PLUGINS.md`](docs/RELEASE-NOTES-PLUGINS.md) · [`docs/RELEASE-NOTES-SSO-TENANCY.md`](docs/RELEASE-NOTES-SSO-TENANCY.md) | what the plugins, the SSO and the multi-tenant brought |
+| [`docs/QUALITY-ASSURANCE.md`](docs/QUALITY-ASSURANCE.md) | the quality assurance: the three layers, the tools, the quality-assurance instance, the defects that were found |
 | [`docs/adr/`](docs/adr/) | ADR-001 (the decisions of the foundation), ADR-002 (the scoping and the numbering), ADR-003 (the posting engine) — read them before changing the rules |
 
 ## The state and the next steps

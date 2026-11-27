@@ -1,6 +1,8 @@
 package com.ultibiz.web.web;
 
 import com.ultibiz.core.application.HelpdeskService;
+import com.ultibiz.core.helpdesk.HelpdeskException;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,15 @@ public class CustomerPortalController {
 
     public CustomerPortalController(HelpdeskService helpdesk) {
         this.helpdesk = helpdesk;
+    }
+
+    /**
+     * A token that is not known any more is a dead link of the customer: the
+     * answer is 404, not an error of the server.
+     */
+    @org.springframework.web.bind.annotation.ExceptionHandler(HelpdeskException.class)
+    public void deadLink(HttpServletResponse response) throws java.io.IOException {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
 
     @GetMapping("/{token}")

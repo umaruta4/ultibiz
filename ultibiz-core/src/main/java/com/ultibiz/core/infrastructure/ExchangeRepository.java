@@ -50,6 +50,20 @@ public class ExchangeRepository {
         return rows.isEmpty() ? null : rows.get(0);
     }
 
+    /**
+     * The partners with this code in every organisation. The inbound webhook
+     * of a partner is not a user session: the organisation of the message
+     * comes from the partner itself.
+     */
+    public List<ExchangePartner> partnersByCode(String code) {
+        return jdbc.query("""
+                SELECT id, organization_id, code, name, protocol, direction, endpoint_url, auth_type,
+                       auth_reference, peppol_participant_id, edi_interchange_id, edi_qualifier,
+                       mapping_config, is_active
+                FROM exchange_partner WHERE code = ? ORDER BY organization_id
+                """, (rs, n) -> mapPartner(rs), code);
+    }
+
     public ExchangePartner partnerById(long organizationId, long id) {
         List<ExchangePartner> rows = jdbc.query("""
                 SELECT id, organization_id, code, name, protocol, direction, endpoint_url, auth_type,

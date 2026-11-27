@@ -1,6 +1,7 @@
 package com.ultibiz.web.web;
 
 import com.ultibiz.core.application.ExchangeService;
+import com.ultibiz.core.application.OrderException;
 import com.ultibiz.core.application.SiteScope;
 import com.ultibiz.core.exchange.ExchangeMessage;
 import com.ultibiz.core.settings.SystemSettingsService;
@@ -78,7 +79,16 @@ public class ExchangeApiController {
             refused.put("error", "Invalid webhook secret");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(refused);
         }
-        SiteScope scope = scopeProvider.current();
+        SiteScope scope;
+        try {
+            // the partner is a machine: its organisation comes from the
+            // registry of the partners, not from a user session
+            scope = exchange.scopeOfPartner(partnerCode);
+        } catch (OrderException refused) {
+            Map<String, Object> answer = new LinkedHashMap<>();
+            answer.put("error", "Unknown exchange partner");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(answer);
+        }
         String body = payload == null ? "" : payload;
         String key = idempotencyKey;
         if (key == null || key.isBlank()) {

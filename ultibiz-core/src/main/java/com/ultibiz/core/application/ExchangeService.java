@@ -100,6 +100,28 @@ public class ExchangeService {
         }
     }
 
+    /**
+     * The scope of an inbound partner: the organisation of the partner, with
+     * the access of the organisation (a partner is a machine, not a user).
+     *
+     * The code of a partner must be unique in the installation: a code that
+     * exists in two organisations is refused, never guessed.
+     */
+    public SiteScope scopeOfPartner(String partnerCode) {
+        List<ExchangePartner> partners = exchange.partnersByCode(partnerCode);
+        if (partners.isEmpty()) {
+            throw new OrderException("Unknown exchange partner: " + partnerCode);
+        }
+        if (partners.size() > 1) {
+            throw new OrderException("The partner code is not unique: " + partnerCode);
+        }
+        ExchangePartner partner = partners.get(0);
+        if (!partner.active()) {
+            throw new OrderException("The exchange partner is not active: " + partnerCode);
+        }
+        return new SiteScope(partner.organizationId(), java.util.Set.of(), false);
+    }
+
     /** Runs the inbound pipeline for one message. */
     public void processInbound(SiteScope scope, String actor, long messageId) {
         tx.executeWithoutResult(status -> doProcessInbound(scope, actor, messageId));

@@ -62,6 +62,9 @@ public class SecurityConfig {
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/actuator/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
+            // a partner calls the inbound webhook without a browser: there is no
+            // CSRF token in a machine request, the shared secret is the proof
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/api/exchange/inbound/**"))
             .formLogin(login -> login
                 .loginPage("/login")
                 .defaultSuccessUrl("/", true)
